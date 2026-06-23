@@ -191,7 +191,7 @@ paths:
       tags: [Club]
       summary: 동아리 개설 → 개설자 회장 (verified)
       requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/ClubCreate" } } } }
-      responses: { "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Club" } } } } }
+      responses: { "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Club" } } } }, "403": { $ref: "#/components/responses/Error" } }
   /clubs/{id}:
     get: { tags: [Club], summary: 동아리 상세 (public), security: [], parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Club" } } } } } }
     patch: { tags: [Club], summary: 정보 수정 (club.leader), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
@@ -210,7 +210,7 @@ paths:
     get: { tags: [Club], summary: 가입 신청서 폼 조회 (club.staff), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ApplicationForm" } } } } } }
     put: { tags: [Club], summary: 폼빌더 저장 (club.staff), parameters: [ { $ref: "#/components/parameters/id" } ], requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/ApplicationForm" } } } }, responses: { "200": { description: OK } } }
   /clubs/{id}/applications:
-    post: { tags: [Club], summary: 가입 신청(폼 답변) (verified), parameters: [ { $ref: "#/components/parameters/id" } ], requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/JoinApplicationCreate" } } } }, responses: { "201": { description: Created }, "409": { $ref: "#/components/responses/Error" } } }
+    post: { tags: [Club], summary: 가입 신청(폼 답변) (verified), parameters: [ { $ref: "#/components/parameters/id" } ], requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/JoinApplicationCreate" } } } }, responses: { "201": { description: Created }, "403": { $ref: "#/components/responses/Error" }, "409": { $ref: "#/components/responses/Error" } } }
     get: { tags: [Club], summary: 신청자 목록 (club.staff), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
   /clubs/{id}/applications/{aid}/decision:
     post:
@@ -238,7 +238,7 @@ paths:
   /clubs/{id}/meetings:
     post: { tags: [Meeting], summary: 동아리 모임 개설 (club.staff), parameters: [ { $ref: "#/components/parameters/id" } ], requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/MeetingCreate" } } } }, responses: { "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Meeting" } } } } } }
   /meetings/flash:
-    post: { tags: [Meeting], summary: 개인 번개 개설 — 차수별 노쇼 예약금 (verified), requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/MeetingCreate" } } } }, responses: { "201": { description: Created } } }
+    post: { tags: [Meeting], summary: 개인 번개 개설 — 차수별 노쇼 예약금 (verified), requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/MeetingCreate" } } } }, responses: { "201": { description: Created }, "403": { $ref: "#/components/responses/Error" } } }
   /meetings/{id}:
     get: { tags: [Meeting], summary: 모임 상세 (public), security: [], parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Meeting" } } } } } }
     patch: { tags: [Meeting], summary: 모임 수정 (club.host), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
@@ -263,6 +263,7 @@ paths:
       requestBody: { content: { application/json: { schema: { type: object, properties: { topUp: { type: integer, description: 부족분 충전액(포인트) } } } } } }
       responses:
         "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Deposit" } } } }
+        "403": { $ref: "#/components/responses/Error" }   # KYC_REQUIRED
         "402": { $ref: "#/components/responses/Error" }   # INSUFFICIENT_POINTS
         "409": { $ref: "#/components/responses/Error" }   # ROUND_FULL / DEADLINE_PASSED / LOCKED
     delete:
@@ -379,6 +380,7 @@ paths:
       requestBody: { required: true, content: { application/json: { schema: { type: object, required: [amount], properties: { amount: { type: integer, minimum: 1000 } } } } } }
       responses:
         "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ChargeReady" } } } }
+        "403": { $ref: "#/components/responses/Error" }   # KYC_REQUIRED
         "502": { $ref: "#/components/responses/Error" }
   /me/wallet/cashout:
     post:
@@ -409,7 +411,7 @@ paths:
     post: { tags: [Show], summary: 댓글 작성 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "201": { description: Created } } }
   /showts:
     get: { tags: [Show], summary: 숏폼 피드 — 승인분만 (auth), parameters: [ { $ref: "#/components/parameters/cursor" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ShowtsPage" } } } } } }
-    post: { tags: [Show], summary: 영상 업로드(≤60s) + 장부 태깅 → 검수 큐 (verified), requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/ShowtsCreate" } } } }, responses: { "201": { description: Created } } }
+    post: { tags: [Show], summary: 영상 업로드(≤60s) + 장부 태깅 → 검수 큐 (verified), requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/ShowtsCreate" } } } }, responses: { "201": { description: Created }, "403": { $ref: "#/components/responses/Error" } } }
   /showts/{id}/like:
     post: { tags: [Show], summary: 좋아요 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "204": { description: No Content } } }
   /showts/{id}/comments:
@@ -785,41 +787,6 @@ components:
       properties:
         items: { type: array, items: { $ref: "#/components/schemas/Meeting" } }
         nextCursor: { type: string, nullable: true }
-    Attendance:
-      type: object
-      properties:
-        id: { type: string }
-        status: { type: string, enum: [pending_payment, paid, cancelled, noshow] }
-        rounds: { type: array, items: { type: string } }
-        amount: { type: integer }
-        payment: { type: object, properties: { required: { type: boolean } } }
-    PaymentReady:
-      type: object
-      properties:
-        tid: { type: string }
-        redirectUrl: { type: string }
-        appScheme: { type: string }
-        amount: { type: integer }
-    PaymentResult:
-      type: object
-      properties:
-        paymentId: { type: string }
-        status: { type: string, enum: [completed, failed] }
-        attendance: { $ref: "#/components/schemas/Attendance" }
-        ledgerEntries: { type: array, items: { type: string } }
-    Refund:
-      type: object
-      properties:
-        refundId: { type: string }
-        amount: { type: integer }
-        status: { type: string, enum: [requested, processing, completed, failed] }
-        breakdown: { type: object, properties: { variable: { type: integer }, fixedRetained: { type: integer } } }
-    SettlementInput:
-      type: object
-      properties:
-        actualSpent: { type: integer }
-        expenseItems: { type: array, items: { $ref: "#/components/schemas/CostItem" } }
-        receiptFileIds: { type: array, items: { type: string } }
     Settlement:
       type: object
       properties:
