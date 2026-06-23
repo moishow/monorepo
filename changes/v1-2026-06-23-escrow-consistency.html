@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>모이쇼 변경이력 v1 — 에스크로 정합성</title>
+<meta name="description" content="모이쇼 핸드오프 패키지 v1 변경 — 에스크로 모델 정합성 통일 + openapi 파싱 버그 수정" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<style>
+@font-face{font-family:"Pretendard Variable";font-weight:45 920;font-style:normal;font-display:swap;
+  src:url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2") format("woff2-variations");}
+:root{
+  --blue-50:#EEF2FF;--blue-100:#DFE6FF;--blue-500:#3B5CFF;--blue-600:#2E47E6;--blue-700:#2438B8;
+  --purple-50:#F4EEFF;--purple-500:#8C52FF;--purple-700:#6228CC;
+  --mint-50:#E5FBF3;--mint-500:#00C781;--mint-700:#008857;
+  --coral-50:#FFECEC;--coral-500:#FF4B4B;--coral-700:#C82424;--amber-50:#FFF6E5;--amber-600:#F08F00;
+  --text-strong:#161A24;--text-title:#272D3B;--text-body:#3C4456;--text-muted:#6E7689;
+  --surface-card:#FFFFFF;--surface-sunken:#F4F6FA;--border-subtle:#EBEEF4;--border-default:#DDE2EC;
+  --r-md:12px;--r-lg:16px;--r-xl:20px;--r-pill:999px;
+  --shadow-card:0 4px 20px rgba(59,92,255,.08);--shadow-pop:0 16px 40px rgba(30,46,143,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",system-ui,sans-serif;
+  color:var(--text-body);background:var(--surface-sunken);line-height:1.55;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"tnum" 1}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:980px;margin:0 auto;padding:0 24px}
+.hero{position:relative;overflow:hidden;color:#fff;padding:56px 0 60px;
+  background:radial-gradient(900px 360px at 88% -10%,rgba(140,82,255,.4),transparent 60%),
+  linear-gradient(135deg,var(--blue-700),var(--blue-600) 50%,var(--purple-700))}
+.crumb{font-size:13px;font-weight:600;color:rgba(255,255,255,.82);margin-bottom:16px}
+.crumb a{border-bottom:1px solid rgba(255,255,255,.4)}
+.tag{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.04em;
+  padding:6px 13px;border-radius:var(--r-pill);background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);margin-bottom:18px}
+.hero h1{font-size:clamp(28px,5vw,44px);font-weight:800;letter-spacing:-.025em;line-height:1.14;margin-bottom:12px}
+.hero p{font-size:16px;color:rgba(255,255,255,.88);max-width:680px}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.stat{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:var(--r-md);padding:10px 16px}
+.stat b{font-size:22px;font-weight:800;display:block;line-height:1}
+.stat span{font-size:12px;color:rgba(255,255,255,.8)}
+main{padding:48px 0 40px}
+.filesec{margin-bottom:40px}
+.filesec>h2{font-size:20px;font-weight:800;color:var(--text-strong);letter-spacing:-.01em;
+  display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.filesec>h2 code{font-size:14px;font-weight:700;background:var(--blue-50);color:var(--blue-700);padding:3px 9px;border-radius:8px}
+.filesec>.fdesc{font-size:13.5px;color:var(--text-muted);margin-bottom:18px}
+.chg{background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--r-lg);
+  padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow-card)}
+.chg-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+.chg-head h3{font-size:15px;font-weight:700;color:var(--text-title)}
+.badge{font-size:11px;font-weight:800;padding:2px 9px;border-radius:var(--r-pill);letter-spacing:.03em}
+.b-crit{background:var(--coral-700);color:#fff}
+.b-high{background:var(--coral-50);color:var(--coral-700);border:1px solid #ffc9c9}
+.b-med{background:var(--amber-50);color:var(--amber-600);border:1px solid #ffe0a8}
+.b-c1{background:var(--purple-500);color:#fff}
+.fid{font-size:12px;font-weight:700;color:var(--text-muted);font-feature-settings:"tnum" 1}
+.why{font-size:13.5px;color:var(--text-body);margin-bottom:12px}
+.diff{display:grid;grid-template-columns:1fr;gap:8px}
+@media(min-width:680px){.diff.row{grid-template-columns:1fr 1fr}}
+.d{border-radius:var(--r-md);padding:10px 12px;font-size:12.5px;line-height:1.5;
+  font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+.d-before{background:var(--coral-50);border:1px solid #ffd6d6;color:#7a2020}
+.d-after{background:var(--mint-50);border:1px solid #c7f0e0;color:#0a5e44}
+.d .lbl{display:block;font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.04em;margin-bottom:5px;opacity:.85}
+.d-before .lbl{color:var(--coral-700)}
+.d-after .lbl{color:var(--mint-700)}
+.note{background:var(--blue-50);border:1px solid var(--blue-100);border-radius:var(--r-md);padding:8px 12px;font-size:12.5px;color:var(--blue-700);margin-top:10px}
+.kept{background:var(--surface-card);border:1px dashed var(--border-default);border-radius:var(--r-lg);padding:20px 22px;box-shadow:var(--shadow-card)}
+.kept h2{font-size:18px;font-weight:800;color:var(--text-strong);margin-bottom:6px}
+.kept ul{list-style:none;margin-top:12px}
+.kept li{font-size:13.5px;color:var(--text-body);padding:9px 0 9px 26px;position:relative;border-bottom:1px solid var(--border-subtle)}
+.kept li:last-child{border-bottom:0}
+.kept li::before{content:"⏸";position:absolute;left:0;top:9px;color:var(--text-muted)}
+.kept li b{color:var(--text-title)}
+footer{border-top:1px solid var(--border-default);padding:30px 0 50px;color:var(--text-muted);font-size:13px}
+footer a{color:var(--blue-600);font-weight:600}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <div class="crumb"><a href="../index.html">모이쇼 핸드오프</a> · <a href="index.html">변경이력</a> · v1</div>
+  <span class="tag">● RELEASE v1 · 2026-06-23</span>
+  <h1>에스크로 정합성 통일 + 계약 파싱 버그 수정</h1>
+  <p>리뷰 45개 발견을 지상검증(openapi 정본)과 대조해, 실제 결함만 외과적으로 수정했습니다. 거짓양성·스코프크리프는 변경하지 않고 하단에 사유와 함께 기록합니다.</p>
+  <div class="stats">
+    <div class="stat"><b>8</b><span>파일 변경</span></div>
+    <div class="stat"><b>1</b><span>CRITICAL</span></div>
+    <div class="stat"><b>6</b><span>HIGH</span></div>
+    <div class="stat"><b>5+</b><span>MEDIUM</span></div>
+    <div class="stat"><b>88</b><span>openapi paths (정상 파싱)</span></div>
+  </div>
+</div></header>
+
+<main class="wrap">
+
+  <!-- ============ openapi.yaml ============ -->
+  <section class="filesec">
+    <h2>계약 <code>openapi.yaml</code></h2>
+    <p class="fdesc">CLAUDE.md 우선순위상 정본. 모든 문서가 이 파일에 정렬됩니다.</p>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-crit">CRITICAL</span><span class="fid">파싱 · /me/notification-prefs</span><h3>YAML 중괄호 1개 누락 → 계약 파싱 불가(사전 존재 버그)</h3></div>
+      <p class="why">GET 매핑의 닫는 중괄호가 6개 중 5개뿐이라 <code>yaml.safe_load</code>가 line 123에서 실패 — codegen·Swagger UI·Flutter 클라이언트 생성이 모두 깨지는 상태였습니다. 리뷰(텍스트 추출)가 못 잡은 진짜 결함. 정상 라인(/me/trust)은 6/6.</p>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before (닫힘 5)</span>get: { … schema: { $ref: "…/NotificationPrefs" } } } } }</div>
+        <div class="d d-after"><span class="lbl">+ after (닫힘 6)</span>get: { … schema: { $ref: "…/NotificationPrefs" } } } } } }</div>
+      </div>
+      <div class="note">검증: 수정 후 <b>88 paths · 40 schemas 정상 파싱</b>.</div>
+    </article>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-med">MEDIUM</span><span class="fid">M-3 · LedgerEntry</span><h3>차수 단위 분개를 위한 roundId 필드 추가</h3></div>
+      <p class="why">"차수(Round)가 최소 거래 단위"인데 LedgerEntry에 roundId가 없었습니다(Deposit엔 존재).</p>
+      <div class="diff">
+        <div class="d d-after"><span class="lbl">+ added</span>roundId: { type: string, nullable: true, description: "차수 단위 분개의 차수(Round) ID. charge·cashout 등 차수와 무관한 분개는 null" }</div>
+      </div>
+    </article>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-high">HIGH</span><span class="fid">H-5 · M-4</span><h3>누락 조회 엔드포인트 3종 추가 (기존 쓰기의 읽기 미러)</h3></div>
+      <p class="why">PRD/프로토타입엔 있으나 GET이 없던 큐·목록 조회. 새 설계 발명이 아니라 기존 PATCH/POST에 대응하는 읽기만 추가.</p>
+      <div class="diff">
+        <div class="d d-after"><span class="lbl">+ added</span>GET /admin/showts   — Showts 검수 큐(status 필터, op.content)
+GET /admin/posts    — 게시물 모더레이션 큐(op.content)
+GET /clubs/{id}/notices — 공지 목록(club.member)</div>
+      </div>
+    </article>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-high">HIGH</span><span class="fid">H-4 · 데드라인</span><h3>정산 데드라인 값 확정 — "예: 12h" → "기본 12h(FeePolicy)"</h3></div>
+      <p class="why">스케줄러 구현에 필요한 구체값이 예시로만 표기돼 있었습니다. openapi·docs/05·README 3곳 일괄 통일.</p>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before</span>settlementDeadline … "총무 출금 후 정산 데드라인"</div>
+        <div class="d d-after"><span class="lbl">+ after</span>settlementDeadline … "정산 데드라인 = 총무 출금(WITHDRAWN) 시각 + 기본 12h(FeePolicy 설정 가능)"</div>
+      </div>
+    </article>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-high">HIGH</span><span class="fid">H-3 · 법적</span><h3>포인트 용도 제한 명문화</h3></div>
+      <p class="why">선불업 유예 4대 제약 중 "포인트는 모임 정산 목적 외 사용 불가"만 계약에 명시가 없었습니다.</p>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before</span>…레일로만 사용(회원 간 송금 없음).</div>
+        <div class="d d-after"><span class="lbl">+ after</span>…레일로만 사용(회원 간 송금 없음, 포인트는 모임 정산 목적 외 사용 불가).</div>
+      </div>
+    </article>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-med">MEDIUM</span><span class="fid">M-2 · AuditLog</span><h3>감사 로그 자동 기록 대상 작업 명시</h3></div>
+      <div class="diff">
+        <div class="d d-after"><span class="lbl">+ added (description)</span>"민감 작업 before/after 기록 대상 — 총무 출금(payout)·정산 반납(settlement/return)·지급 승인·계정 정지·역할 위임·정책(수수료/권한) 변경·KYC 결정."</div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ docs/05 ============ -->
+  <section class="filesec">
+    <h2>머니플로우 정본 <code>docs/05</code></h2>
+    <p class="fdesc">포인트 에스크로 정산모델 — 계약(openapi)과 1:1 일치하도록 정정.</p>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-med">MEDIUM</span><span class="fid">M-3 · 불변식</span><h3>동시성 불변식의 PAYOUT → PAYOUT_TREASURER</h3></div>
+      <p class="why">line 103(정합성 불변식)은 PAYOUT_TREASURER로 올바르나, line 118(동시성)은 단독 PAYOUT으로 불일치.</p>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before</span>잔액 = Σ(DEPOSIT) − Σ(PAYOUT) + Σ(RETURN) − Σ(SETTLE_REFUND)</div>
+        <div class="d d-after"><span class="lbl">+ after</span>잔액 = Σ(DEPOSIT) − Σ(PAYOUT_TREASURER) + Σ(RETURN) − Σ(SETTLE_REFUND)</div>
+      </div>
+    </article>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-high">HIGH</span><span class="fid">H-1 · CONSENT</span><h3>출금 동의(CONSENT) 상태를 상태머신에 추가</h3></div>
+      <p class="why">openapi <code>Escrow.state</code>에는 CONSENT가 있는데 docs/05는 5단계만 기술 → 6상태로 정합. (openapi의 payout-consent 투표 플로우가 정본이므로 삭제가 아닌 추가가 정답)</p>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before</span>OPEN → LOCKED → WITHDRAWN → SETTLING → DONE</div>
+        <div class="d d-after"><span class="lbl">+ after</span>OPEN → LOCKED → CONSENT → WITHDRAWN → SETTLING → DONE</div>
+      </div>
+    </article>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-high">HIGH</span><span class="fid">H-2 · Settlement</span><h3>Settlement 상태 enum을 openapi 정본으로 통일</h3></div>
+      <p class="why">3개 문서가 서로 다른 enum 사용. openapi 기준으로 통일(내부 단계 receipt-verified/auto-settled는 설명으로 보존).</p>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before</span>pending → receipt-verified → returned → auto-settled</div>
+        <div class="d d-after"><span class="lbl">+ after</span>open → withdrawn → settling → returned → done</div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ docs/02 ============ -->
+  <section class="filesec">
+    <h2>데이터 정의서 <code>docs/02</code></h2>
+    <p class="fdesc">C-1 핵심 — 개발자가 그대로 옮겨 적는 엔티티·enum을 에스크로로 정정.</p>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-c1">C-1</span><span class="fid">LedgerEntry</span><h3>type enum 한글 5종 → 영문 9종(openapi 정본) + ownerType·roundId</h3></div>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before</span>type: 펀딩·회비·환급·노쇼예약금·수수료
+ownerType: user·club</div>
+        <div class="d d-after"><span class="lbl">+ after</span>type: charge·deposit·refund_cancel·lock·payout_treasurer·return·settle_refund·cashout·penalty
+ownerType: user·club·escrow  ＋ roundId 추가</div>
+      </div>
+    </article>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-c1">C-1</span><span class="fid">도메인 D · Payment 카드</span><h3>구 직접결제 엔티티 → 에스크로 엔티티 + "구 모델" 경고</h3></div>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before</span>Account(모임통장) · Payment/Contribution(송금·납부) …</div>
+        <div class="d d-after"><span class="lbl">+ after</span>Wallet · BankAccount · Deposit/MeetingEscrow · TreasurerPayout/PayoutConsent · Settlement …  ＋ Payment 카드에 ⚠ 구 모델 배너</div>
+      </div>
+    </article>
+
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-high">HIGH</span><span class="fid">H-2 · Settlement.status</span><h3>작성중·마감·완료 → openapi enum</h3></div>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before</span>status: 작성중·마감·완료</div>
+        <div class="d d-after"><span class="lbl">+ after</span>status: open·withdrawn·settling·returned·done (openapi 정본)</div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ docs/03 ============ -->
+  <section class="filesec">
+    <h2>API 권한설계서 <code>docs/03</code></h2>
+    <p class="fdesc">C-1 핵심 — §7/§8 엔드포인트 표(개발자 직접 전사)를 에스크로로 전면 교체.</p>
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-c1">C-1</span><span class="fid">§7 · §8 · 플로우</span><h3>레거시 카카오 직접결제 → 에스크로 엔드포인트</h3></div>
+      <p class="why">목차·섹션 제목·엔드포인트 행·결제 플로우·요약표 모두 정정.</p>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before</span>POST /meetings/{id}/attendances
+POST /payments/kakao/ready
+POST /payments/kakao/approve
+POST /refunds
+POST /settlements/{id}/close</div>
+        <div class="d d-after"><span class="lbl">+ after</span>POST /meetings/{id}/rounds/{rid}/deposit
+POST /meetings/{id}/lock
+POST /meetings/{id}/payout-consent/request · /vote
+POST /meetings/{id}/payout
+POST /meetings/{id}/settlement/receipts · /return · /auto</div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ docs/04 ============ -->
+  <section class="filesec">
+    <h2>API 상세명세서 <code>docs/04</code></h2>
+    <p class="fdesc">레거시 상세 7블록 전면 재작성은 고위험 → 정본 포인터 배너로 대체(전면 재작성은 옵션).</p>
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-c1">C-1</span><span class="fid">레거시 섹션</span><h3>"구 직접결제 모델(폐기) — 정본은 에스크로" 경고 배너 삽입</h3></div>
+      <div class="diff">
+        <div class="d d-after"><span class="lbl">+ added (배너)</span>이 페이지의 /attendances · /payments/kakao/ready·approve · /refunds · /settlements/{id}/close 는 폐기. 정본 = openapi.yaml §7·§8 + docs/05. /payments/kakao/webhook 만 포인트 충전 확인용 유지.</div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ tokens + README ============ -->
+  <section class="filesec">
+    <h2>디자인 토큰 · README <code>colors.css · design-tokens.md · README.md</code></h2>
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-high">HIGH</span><span class="fid">H-6 · 접근성</span><h3>text-disabled(#767F92) 용도 명확화 — recolor 대신</h3></div>
+      <p class="why">흰 배경 4.02:1로 AA(4.5:1) 미달이나, darken하면 text-muted보다 어두워져 스케일이 역전. WCAG 1.4.3은 비활성 컴포넌트를 면제하므로 "용도 한정"이 올바른 fix.</p>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before</span>--text-disabled: #767F92; /* 메타/타임스탬프 — WCAG 근접 */</div>
+        <div class="d d-after"><span class="lbl">+ after</span>--text-disabled: #767F92; /* 비활성/disabled UI 전용(WCAG 면제). 읽는 메타엔 --text-muted(4.5:1↑) */</div>
+      </div>
+    </article>
+    <article class="chg">
+      <div class="chg-head"><span class="badge b-high">HIGH</span><span class="fid">H-1·H-4 · README</span><h3>머니플로우 요약에 CONSENT + 데드라인 반영</h3></div>
+      <div class="diff row">
+        <div class="d d-before"><span class="lbl">— before</span>… 락(LOCKED) → 총무 출금(WITHDRAWN) … 타이머(예: 12h)</div>
+        <div class="d d-after"><span class="lbl">+ after</span>… 락(LOCKED) → 전원 동의(CONSENT) → 총무 출금(WITHDRAWN) … 타이머(기본 12h, FeePolicy)</div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ NOT changed ============ -->
+  <section class="filesec">
+    <div class="kept">
+      <h2>⏸ 의도적으로 변경하지 않음 (거짓양성 · 스코프크리프)</h2>
+      <p class="fdesc" style="margin:6px 0 0">"모두 수정"은 거짓양성을 가려내 "검토함·변경없음"으로 보고하는 것을 포함합니다.</p>
+      <ul>
+        <li><b>토큰 명명 차이</b> (--blue-500 ↔ --moisho-blue-500, --shadow-glow ↔ --glow-blue) — index.html은 자체 변수를 쓰는 독립 페이지. 값은 일치 → 시스템 깨짐 아님, 변경 시 무위험 이득.</li>
+        <li><b>index.html clamp() 반응형</b> — 고정 px 토큰 문서와 다른 건 결함이 아님.</li>
+        <li><b>verified 엔드포인트 일괄 403 추가</b> — OpenAPI 장황화, 가치 낮음.</li>
+        <li><b>고아 스키마 삭제</b> (Attendance/PaymentReady/PaymentResult/Refund) — 계약 파일에서 코드 삭제는 승인 사안 → 권고만(옵션).</li>
+        <li><b>docs/01 PRD 서사 · docs/04 상세 전면 재작성</b> — 거대·고위험, README caveat + 배너가 커버 → 옵션으로 남김.</li>
+        <li><b>/admin/deposits · /admin/payouts/decision</b> — 에스크로와 긴장 있으나 운영 분쟁/대사용일 수 있어 사용자 판단으로 보류.</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+<footer><div class="wrap">
+  모이쇼 핸드오프 변경이력 v1 · 2026-06-23 · <a href="index.html">전체 버전 보기</a> · <a href="../index.html">핸드오프 홈</a> · <a href="https://github.com/moishow/design/commit/1dec161">커밋 1dec161 ↗</a>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>모이쇼 — 변경이력 (버전별)</title>
+<meta name="description" content="모이쇼 핸드오프 패키지 버전별 변경이력 모음" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<style>
+@font-face{font-family:"Pretendard Variable";font-weight:45 920;font-style:normal;font-display:swap;
+  src:url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2") format("woff2-variations");}
+:root{
+  --blue-50:#EEF2FF;--blue-100:#DFE6FF;--blue-500:#3B5CFF;--blue-600:#2E47E6;--blue-700:#2438B8;
+  --purple-50:#F4EEFF;--purple-300:#B68FFF;--purple-500:#8C52FF;--purple-700:#6228CC;
+  --mint-50:#E5FBF3;--mint-700:#008857;--coral-50:#FFECEC;--coral-700:#C82424;--amber-50:#FFF6E5;--amber-600:#F08F00;
+  --text-strong:#161A24;--text-title:#272D3B;--text-body:#3C4456;--text-muted:#6E7689;
+  --surface-card:#FFFFFF;--surface-sunken:#F4F6FA;--border-subtle:#EBEEF4;--border-default:#DDE2EC;
+  --r-md:12px;--r-lg:16px;--r-xl:20px;--r-pill:999px;
+  --shadow-card:0 4px 20px rgba(59,92,255,.08);--shadow-pop:0 16px 40px rgba(30,46,143,.16);
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);--ease-out:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",system-ui,sans-serif;
+  color:var(--text-body);background:var(--surface-sunken);line-height:1.55;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px}
+.hero{position:relative;overflow:hidden;color:#fff;padding:60px 0 64px;
+  background:radial-gradient(900px 360px at 12% -10%,rgba(59,92,255,.5),transparent 60%),
+  linear-gradient(135deg,var(--blue-700),var(--purple-700))}
+.crumb{font-size:13px;font-weight:600;color:rgba(255,255,255,.82);margin-bottom:16px}
+.crumb a{border-bottom:1px solid rgba(255,255,255,.4)}
+.hero h1{font-size:clamp(30px,5vw,46px);font-weight:800;letter-spacing:-.025em;margin-bottom:12px}
+.hero p{font-size:16px;color:rgba(255,255,255,.88);max-width:620px}
+main{padding:52px 0 40px}
+.tl{position:relative;margin-left:8px;padding-left:28px;border-left:2px solid var(--border-default)}
+.rel{position:relative;margin-bottom:22px}
+.rel::before{content:"";position:absolute;left:-35px;top:24px;width:14px;height:14px;border-radius:50%;
+  background:var(--blue-500);border:3px solid #fff;box-shadow:0 0 0 3px var(--blue-100)}
+.rel.latest::before{background:var(--purple-500);box-shadow:0 0 0 3px var(--purple-300)}
+.card{display:block;background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--r-xl);
+  padding:22px 24px;box-shadow:var(--shadow-card);transition:transform .22s var(--ease-spring),box-shadow .22s var(--ease-out),border-color .2s}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-pop);border-color:var(--blue-100)}
+.card:focus-visible{outline:3px solid var(--purple-300);outline-offset:2px}
+.rel-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.ver{font-size:13px;font-weight:800;color:#fff;background:var(--purple-500);padding:3px 11px;border-radius:var(--r-pill);letter-spacing:.03em}
+.date{font-size:12.5px;font-weight:700;color:var(--text-muted)}
+.latest .now{font-size:11px;font-weight:800;color:var(--mint-700);background:var(--mint-50);padding:2px 9px;border-radius:var(--r-pill)}
+.card h2{font-size:18px;font-weight:800;color:var(--text-strong);letter-spacing:-.01em;margin-bottom:8px}
+.card p{font-size:13.5px;color:var(--text-muted);margin-bottom:14px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.chip{font-size:11px;font-weight:800;padding:3px 10px;border-radius:var(--r-pill);letter-spacing:.02em}
+.c-crit{background:var(--coral-700);color:#fff}
+.c-high{background:var(--coral-50);color:var(--coral-700);border:1px solid #ffc9c9}
+.c-med{background:var(--amber-50);color:var(--amber-600);border:1px solid #ffe0a8}
+.c-files{background:var(--blue-50);color:var(--blue-700)}
+.go{font-size:13px;font-weight:700;color:var(--purple-700);display:inline-flex;align-items:center;gap:5px}
+.card:hover .go .arrow{transform:translateX(4px)}
+.go .arrow{transition:transform .2s var(--ease-out)}
+footer{border-top:1px solid var(--border-default);padding:30px 0 50px;color:var(--text-muted);font-size:13px}
+footer a{color:var(--blue-600);font-weight:600}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <div class="crumb"><a href="../index.html">모이쇼 핸드오프</a> · 변경이력</div>
+  <h1>변경이력 (버전별)</h1>
+  <p>핸드오프 패키지의 버전별 변경 내용을 모아둡니다. 각 릴리스는 before/after 단위로 보관됩니다.</p>
+</div></header>
+
+<main class="wrap">
+  <div class="tl">
+
+    <div class="rel latest">
+      <a class="card" href="v1-2026-06-23-escrow-consistency.html">
+        <div class="rel-top"><span class="ver">v1</span><span class="date">2026-06-23</span><span class="now">최신</span></div>
+        <h2>에스크로 정합성 통일 + 계약 파싱 버그 수정</h2>
+        <p>리뷰 45개 발견을 openapi 정본과 대조해 실제 결함만 외과적으로 수정. 거짓양성은 변경 없이 사유 기록.</p>
+        <div class="chips">
+          <span class="chip c-files">8 파일</span>
+          <span class="chip c-crit">CRITICAL 1</span>
+          <span class="chip c-high">HIGH 6</span>
+          <span class="chip c-med">MEDIUM 5+</span>
+        </div>
+        <span class="go">변경 상세 보기 <span class="arrow">→</span></span>
+      </a>
+    </div>
+
+    <!-- 다음 릴리스는 위에 .rel.latest로 추가하고, 이전 v1은 .latest 클래스만 제거하세요. -->
+
+  </div>
+</main>
+
+<footer><div class="wrap">
+  모이쇼 핸드오프 변경이력 · <a href="../index.html">핸드오프 홈</a> · <a href="https://github.com/moishow/design/commits/main">GitHub 커밋 기록 ↗</a>
+</div></footer>
+</body>
+</html>
