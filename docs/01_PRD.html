@@ -126,10 +126,10 @@ ul.tight.act li::before{content:"→";color:var(--ac);font-weight:700;}
 <div class="doc-h">01 · Document Overview</div><div class="doc-t">문서 개요 · 용어</div>
 <p class="doc-lead">본 PRD는 지금까지 확정된 모이쇼의 <b>디자인·기능을 빠짐없이 집약</b>해 백엔드 설계(데이터 모델·상태 전이·API)의 기준을 제공한다. 화면 스펙(와이어프레임), UI 킷(앱·어드민 목업), 디자인 시스템을 단일 소스로 통합했다.</p>
 <table><thead><tr><th style="width:20%">용어</th><th>정의</th></tr></thead><tbody>
-<tr><td><b>가상 장부(Virtual Ledger)</b></td><td>실제 은행 출금 없이 에스크로 통합계좌 내에서 유저/모임 잔액을 논리적으로 분개·표시하는 장부.</td></tr>
-<tr><td><b>에스크로 통합계좌</b></td><td>모이쇼가 운영하는 단일 보관계좌. 모든 입금/지급이 이 계좌를 거치며, 개별 잔액은 LedgerEntry 합으로 산출.</td></tr>
-<tr><td><b>안심 예산안</b></td><td>캠페인 모금액의 항목별 사용처를 사전 공개하는 신뢰 장치. 펀딩 상세(AP-05)의 핵심.</td></tr>
-<tr><td><b>입금 대사(Reconcile)</b></td><td>은행/PG 미연동 환경에서 카카오페이 이체 내역과 캠페인 납부를 대조해 확인하는 과정.</td></tr>
+<tr><td><b>포인트 원장(LedgerEntry)</b></td><td>모든 포인트 이동을 append-only로 분개. 유저/모임 잔액 = 분개 합으로 재계산 가능(가상 장부).</td></tr>
+<tr><td><b>포인트 에스크로</b></td><td>모임/차수 단위로 예치 포인트를 보관. 만남시각 락 → 전원 동의 → 총무 출금 → 반납·정산. 카카오페이는 충전·현금화 레일로만 사용.</td></tr>
+<tr><td><b>안심 예산안</b></td><td>모임 차수의 항목별 사용처를 사전 공개하는 신뢰 장치. 모임 상세(AP-05)의 핵심.</td></tr>
+<tr><td><b>충전 대사(Reconcile)</b></td><td>카카오페이 충전(webhook) 내역과 지갑 포인트 적립을 대조·점검(누락/불일치 보정). 차수 예치는 보유 포인트 차감.</td></tr>
 <tr><td><b>총무 vs 운영자</b></td><td>총무=모임 단위 운영(앱 내장 도구). 운영자=본사 플랫폼 운영(웹 어드민). 권한이 의도적으로 분리됨.</td></tr>
 </tbody></table>
 <div class="callout" style="border-left:4px solid #FF4B4B;background:#FFECEC"><b style="color:#C82424">⚠ 머니플로우 정본 변경 — 아래 결제 서술은 초기 설계(폐기)</b> · 이 PRD의 결제·정산 모델(에스크로 통합계좌 + 카카오페이 이체 + 운영자 입금 대사(AD-10) + 지급 승인, Campaign·Contribution·Payout)은 <b>초기 설계</b>다. 현재 정본은 <b>앱 포인트 기반 기간 제한형 에스크로</b> — 예치 → 락 → 전원 동의(CONSENT) → 총무 출금 → 증빙·반납 → 자동 정산 — 이며 <code>openapi.yaml §7·§8</code> + <code>05_포인트에스크로정산모델</code> 이 정본이다(거래 단위=차수, 회원 간 송금 없음, 포인트는 모임 정산 목적 외 사용 불가, 충전·출금 수수료 0%).</div>
