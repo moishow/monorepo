@@ -4,3 +4,4 @@
 # Editor / OS
 *.swp
 Thumbs.db
+.gstack/
