@@ -1,0 +1,66 @@
+/* ============================================================
+   모이쇼 — Typography
+   숫자(돈/인원수/달성률)가 화면의 큰 비중을 차지 → Pretendard.
+   금액에는 tabular numerals(고정폭 숫자)를 적용해 자릿수 흔들림 방지.
+   ============================================================ */
+
+:root {
+  /* ---------- Families ---------- */
+  --font-sans: "Pretendard Variable", "Pretendard", -apple-system,
+               BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo",
+               "Malgun Gothic", sans-serif;
+  --font-display: var(--font-sans);
+
+  /* tabular figures — 금액/달성률 표기에 적용 (font-feature-settings) */
+  --font-feature-numeric: "tnum" 1, "cv01" 1;
+
+  /* ---------- Weights ---------- */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* ---------- Type scale (px) ----------
+     모바일 기준. Display 28 / Title 18 / Body 14 / Caption 12. */
+  --fs-display-lg: 34px;  /* 메인 펀딩 총액 (히어로) */
+  --fs-display:    28px;  /* 펀딩 금액 / 달성률 */
+  --fs-heading:    22px;  /* 화면 제목 */
+  --fs-title:      18px;  /* 모임명 / 메뉴 / 카드 타이틀 */
+  --fs-subtitle:   16px;  /* 리스트 1차 텍스트 */
+  --fs-body:       14px;  /* 본문 (지원서/장부 상세) */
+  --fs-caption:    12px;  /* 계좌번호 / 입금 시간 */
+  --fs-micro:      11px;  /* 배지 / 미세 라벨 */
+
+  /* ---------- Line heights ---------- */
+  --lh-tight:   1.2;   /* @kind other */
+  --lh-snug:    1.35;  /* @kind other */
+  --lh-normal:  1.5;   /* @kind other */
+  --lh-relaxed: 1.65;  /* @kind other */
+
+  /* ---------- Letter spacing ----------
+     Display(금액)은 자간 -2%로 단단하게 묶음. */
+  --ls-display: -0.02em;
+  --ls-title:   -0.01em;
+  --ls-normal:  0;        /* @kind other */
+  --ls-caption: 0.005em;
+
+  /* ============================================================
+     SEMANTIC TEXT TOKENS  (font-size · weight · line-height)
+     ============================================================ */
+  --text-display-lg: var(--weight-bold)     var(--fs-display-lg) / var(--lh-tight) var(--font-display);
+  --text-display:    var(--weight-bold)     var(--fs-display)    / var(--lh-tight) var(--font-display);
+  --text-heading:    var(--weight-bold)     var(--fs-heading)    / var(--lh-snug)  var(--font-sans);
+  --text-title-1:    var(--weight-bold)     var(--fs-title)      / var(--lh-snug)  var(--font-sans);
+  --text-subtitle:   var(--weight-semibold) var(--fs-subtitle)   / var(--lh-normal) var(--font-sans);
+  --text-body-1:     var(--weight-regular)  var(--fs-body)       / var(--lh-normal) var(--font-sans);
+  --text-body-strong:var(--weight-semibold) var(--fs-body)       / var(--lh-normal) var(--font-sans);
+  --text-caption-1:  var(--weight-medium)   var(--fs-caption)    / var(--lh-snug)  var(--font-sans);
+}
+
+/* Optional helper classes — handy in specimen cards / kits */
+.t-display { font: var(--text-display); letter-spacing: var(--ls-display); color: var(--text-strong); font-feature-settings: var(--font-feature-numeric); }
+.t-heading { font: var(--text-heading); letter-spacing: var(--ls-title); color: var(--text-strong); }
+.t-title   { font: var(--text-title-1); letter-spacing: var(--ls-title); color: var(--text-title); }
+.t-body    { font: var(--text-body-1);  color: var(--text-body); }
+.t-caption { font: var(--text-caption-1); letter-spacing: var(--ls-caption); color: var(--text-muted); }
+.t-num     { font-feature-settings: var(--font-feature-numeric); }

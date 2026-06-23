@@ -1,0 +1,875 @@
+openapi: 3.1.0
+info:
+  title: 모이쇼 (Moisho) API
+  version: "1.0.0"
+  description: |
+    동아리·소모임 회비/펀딩 핀테크. 결제는 앱 포인트 기반 기간 제한형 에스크로 모델.
+    카카오페이는 포인트 충전·현금화 레일로만 사용(회원 간 송금 없음). 거래 단위는 차수(Round),
+    잔액은 가상 장부(LedgerEntry) 분개로 표현. 상세 설계는 docs/ 의 문서 + 포인트 에스크로 정산 모델 설계서 참고.
+
+    에스크로 흐름: 예치(OPEN) → 만남시각 락(LOCKED) → 총무 출금(WITHDRAWN) → 증빙·반납(SETTLING) → 자동 정산·현금화(DONE).
+
+    권한 태그(설명에 표기): public · auth · verified · self · club.member/staff/treasurer/leader/host · op.*
+servers:
+  - url: https://api.moisho.app/v1
+
+tags:
+  - name: Auth           # 인증·계정 (§1)
+  - name: Payment-Account # 결제수단(카카오페이) (§2)
+  - name: Social         # 신뢰·팔로우·신고 (§3)
+  - name: Discover       # 탐색 (§4)
+  - name: Club           # 동아리 (§5)
+  - name: Meeting        # 모임·차수 (§6)
+  - name: Escrow         # 신청·예치·락·출금 (§7)
+  - name: Settlement     # 증빙·반납·자동정산 (§8)
+  - name: Wallet         # 포인트 지갑·충전·현금화 (§9)
+  - name: Show           # 쇼·Showts·DM (§10)
+  - name: Admin-Ops      # 어드민 운영 (§11)
+  - name: Admin-Finance  # 어드민 재무·CS·정책 (§12)
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ============ §1 인증·계정 ============
+  /auth/oauth/{provider}:
+    post:
+      tags: [Auth]
+      summary: 소셜 로그인/가입 (public)
+      security: []
+      parameters:
+        - { name: provider, in: path, required: true, schema: { type: string, enum: [kakao, apple, google] } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [authorizationCode, redirectUri]
+              properties:
+                authorizationCode: { type: string }
+                redirectUri: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthToken" }
+        "502": { $ref: "#/components/responses/Error" }
+  /auth/signup/profile:
+    post:
+      tags: [Auth]
+      summary: 온보딩 프로필 저장 (auth)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nickname, agreedTerms]
+              properties:
+                nickname: { type: string }
+                bio: { type: string, maxLength: 60 }
+                interests: { type: array, items: { type: string } }
+                agreedTerms: { type: boolean }
+      responses: { "200": { $ref: "#/components/responses/User" } }
+  /auth/kyc:
+    post:
+      tags: [Auth]
+      summary: 본인인증 → verified + 지갑 개설 (auth)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [method, impUid]
+              properties:
+                method: { type: string, enum: [kakao, telecom, ipin] }
+                impUid: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verified: { type: boolean }
+                  wallet: { $ref: "#/components/schemas/Wallet" }
+        "429": { $ref: "#/components/responses/Error" }
+  /auth/refresh:
+    post: { tags: [Auth], summary: 토큰 갱신 (auth), responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/AuthToken" } } } } } }
+  /auth/logout:
+    post: { tags: [Auth], summary: 로그아웃 (auth), responses: { "204": { description: No Content } } }
+  /me:
+    get: { tags: [Auth], summary: 내 프로필 (self), responses: { "200": { $ref: "#/components/responses/User" } } }
+    patch:
+      tags: [Auth]
+      summary: 프로필 수정 (self)
+      requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/ProfileUpdate" } } } }
+      responses: { "200": { $ref: "#/components/responses/User" } }
+  /me/trust:
+    get: { tags: [Auth], summary: 내 신뢰/매너 지표 — 산식은 서버 내부 (self), responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/TrustProfile" } } } } } }
+  /me/notifications:
+    get:
+      tags: [Auth]
+      summary: 알림함 (self)
+      parameters: [ { $ref: "#/components/parameters/cursor" }, { $ref: "#/components/parameters/limit" } ]
+      responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/NotificationPage" } } } } }
+  /me/notifications/{id}:
+    patch: { tags: [Auth], summary: 알림 읽음 처리 (self), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "204": { description: No Content } } }
+  /me/notification-prefs:
+    get: { tags: [Auth], summary: 알림 수신 토글 조회 (self), responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/NotificationPrefs" } } } } }
+    patch: { tags: [Auth], summary: 알림 수신 토글 변경 (self), requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/NotificationPrefs" } } } }, responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/NotificationPrefs" } } } } } }
+  /me/legal/agreements:
+    get: { tags: [Auth], summary: 약관·동의 이력 (self), responses: { "200": { description: OK } } }
+
+  # ============ §2 결제수단(카카오페이) ============
+  /me/payment-accounts:
+    get: { tags: [Payment-Account], summary: 연결된 결제수단 (self), responses: { "200": { description: OK } } }
+  /me/payment-accounts/kakao:
+    post: { tags: [Payment-Account], summary: 카카오페이 연동 (verified), responses: { "201": { description: Created }, "403": { $ref: "#/components/responses/Error" } } }
+  /me/payment-accounts/{id}:
+    delete: { tags: [Payment-Account], summary: 연동 해제 (self), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "204": { description: No Content } } }
+
+  # ============ §3 신뢰·소셜 ============
+  /users/{id}:
+    get: { tags: [Social], summary: 공개 프로필 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/PublicProfile" } } } } } }
+  /users/{id}/follow:
+    post: { tags: [Social], summary: 팔로우 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "204": { description: No Content } } }
+    delete: { tags: [Social], summary: 언팔로우 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "204": { description: No Content } } }
+  /users/{id}/followers:
+    get: { tags: [Social], summary: 팔로워 목록 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+  /users/{id}/following:
+    get: { tags: [Social], summary: 팔로잉 목록 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+  /reports:
+    post:
+      tags: [Social]
+      summary: 신고 — 신고자 비공개 (auth)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetType, targetId, reason]
+              properties:
+                targetType: { type: string, enum: [user, post, showts] }
+                targetId: { type: string }
+                reason: { type: string, enum: [unpaid, noshow, broken_promise, abusive, impersonation, etc] }
+      responses: { "201": { description: Created } }
+
+  # ============ §4 탐색 ============
+  /discover/meetings:
+    get:
+      tags: [Discover]
+      summary: 모임 탐색 (public)
+      security: []
+      parameters:
+        - { name: locMode, in: query, schema: { type: string, enum: [gps, region] } }
+        - { name: regionCode, in: query, schema: { type: string } }
+        - { name: lat, in: query, schema: { type: number } }
+        - { name: lng, in: query, schema: { type: number } }
+        - { name: distanceKm, in: query, schema: { type: integer, enum: [1, 3, 5] } }
+        - { name: category, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string, enum: [all, recruiting, full, ended] } }
+        - { name: q, in: query, schema: { type: string } }
+        - { $ref: "#/components/parameters/cursor" }
+        - { $ref: "#/components/parameters/limit" }
+      responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/MeetingPage" } } } } }
+  /discover/clubs:
+    get: { tags: [Discover], summary: 동아리 탐색 (public), security: [], parameters: [ { name: q, in: query, schema: { type: string } }, { name: category, in: query, schema: { type: string } } ], responses: { "200": { description: OK } } }
+  /discover/regions:
+    get: { tags: [Discover], summary: 지역 트리 (public), security: [], responses: { "200": { description: OK } } }
+  /discover/keywords:
+    get: { tags: [Discover], summary: 인기 검색어 (public), security: [], responses: { "200": { description: OK } } }
+
+  # ============ §5 동아리 ============
+  /clubs:
+    post:
+      tags: [Club]
+      summary: 동아리 개설 → 개설자 회장 (verified)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/ClubCreate" } } } }
+      responses: { "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Club" } } } } }
+  /clubs/{id}:
+    get: { tags: [Club], summary: 동아리 상세 (public), security: [], parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Club" } } } } } }
+    patch: { tags: [Club], summary: 정보 수정 (club.leader), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+    delete: { tags: [Club], summary: 해산 (club.leader), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "204": { description: No Content } } }
+  /clubs/{id}/members:
+    get: { tags: [Club], summary: 부원 목록 (club.member), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+  /clubs/{id}/members/{uid}:
+    patch:
+      tags: [Club]
+      summary: 역할 위임/변경 (club.leader)
+      parameters: [ { $ref: "#/components/parameters/id" }, { name: uid, in: path, required: true, schema: { type: string } } ]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { role: { type: string, enum: [member, staff, treasurer, leader] } } } } } }
+      responses: { "200": { description: OK } }
+    delete: { tags: [Club], summary: 내보내기 / 나가기 승인 (club.staff), parameters: [ { $ref: "#/components/parameters/id" }, { name: uid, in: path, required: true, schema: { type: string } } ], responses: { "204": { description: No Content } } }
+  /clubs/{id}/application-form:
+    get: { tags: [Club], summary: 가입 신청서 폼 조회 (club.staff), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ApplicationForm" } } } } } }
+    put: { tags: [Club], summary: 폼빌더 저장 (club.staff), parameters: [ { $ref: "#/components/parameters/id" } ], requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/ApplicationForm" } } } }, responses: { "200": { description: OK } } }
+  /clubs/{id}/applications:
+    post: { tags: [Club], summary: 가입 신청(폼 답변) (verified), parameters: [ { $ref: "#/components/parameters/id" } ], requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/JoinApplicationCreate" } } } }, responses: { "201": { description: Created }, "409": { $ref: "#/components/responses/Error" } } }
+    get: { tags: [Club], summary: 신청자 목록 (club.staff), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+  /clubs/{id}/applications/{aid}/decision:
+    post:
+      tags: [Club]
+      summary: 가입 승인/반려 (club.staff)
+      parameters: [ { $ref: "#/components/parameters/id" }, { name: aid, in: path, required: true, schema: { type: string } } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [decision], properties: { decision: { type: string, enum: [approve, reject] }, reason: { type: string } } } } } }
+      responses: { "200": { description: OK } }
+  /clubs/{id}/posts:
+    get: { tags: [Club], summary: 동아리 피드 (club.member), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+    post: { tags: [Show], summary: 쇼 글 작성 (club.member), parameters: [ { $ref: "#/components/parameters/id" } ], requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/PostCreate" } } } }, responses: { "201": { description: Created } } }
+  /clubs/{id}/notices:
+    post: { tags: [Club], summary: 공지 작성/고정 (club.staff), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "201": { description: Created } } }
+  /clubs/{id}/ledger:
+    get: { tags: [Wallet], summary: 동아리 장부 잔액·히스토리 (club.member), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ClubLedger" } } } } } }
+  /clubs/{id}/ledger/entries:
+    get: { tags: [Wallet], summary: 동아리 거래 원장 append-only (club.member), parameters: [ { $ref: "#/components/parameters/id" }, { $ref: "#/components/parameters/cursor" } ], responses: { "200": { description: OK } } }
+  /clubs/{id}/ledger/export:
+    get: { tags: [Wallet], summary: 엑셀/PDF 내보내기 (club.staff), parameters: [ { $ref: "#/components/parameters/id" }, { name: format, in: query, schema: { type: string, enum: [csv, pdf] } } ], responses: { "200": { description: OK } } }
+  /clubs/{id}/trust:
+    get: { tags: [Club], summary: 재정 신뢰 등급 (public), security: [], parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ClubTrust" } } } } } }
+
+  # ============ §6 모임·차수 ============
+  /clubs/{id}/meetings:
+    post: { tags: [Meeting], summary: 동아리 모임 개설 (club.staff), parameters: [ { $ref: "#/components/parameters/id" } ], requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/MeetingCreate" } } } }, responses: { "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Meeting" } } } } } }
+  /meetings/flash:
+    post: { tags: [Meeting], summary: 개인 번개 개설 — 차수별 노쇼 예약금 (verified), requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/MeetingCreate" } } } }, responses: { "201": { description: Created } } }
+  /meetings/{id}:
+    get: { tags: [Meeting], summary: 모임 상세 (public), security: [], parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Meeting" } } } } } }
+    patch: { tags: [Meeting], summary: 모임 수정 (club.host), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+    delete: { tags: [Meeting], summary: 모임 취소 (club.host), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "204": { description: No Content } } }
+  /meetings/{id}/rounds:
+    post: { tags: [Meeting], summary: 차수 추가 (club.host), parameters: [ { $ref: "#/components/parameters/id" } ], requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/Round" } } } }, responses: { "201": { description: Created } } }
+  /meetings/{id}/rounds/{rid}:
+    patch: { tags: [Meeting], summary: 차수 수정 (club.host), parameters: [ { $ref: "#/components/parameters/id" }, { name: rid, in: path, required: true, schema: { type: string } } ], responses: { "200": { description: OK } } }
+    delete: { tags: [Meeting], summary: 차수 삭제 (club.host), parameters: [ { $ref: "#/components/parameters/id" }, { name: rid, in: path, required: true, schema: { type: string } } ], responses: { "204": { description: No Content } } }
+  /meetings/{id}/rounds/{rid}/participants:
+    get: { tags: [Meeting], summary: 차수 참여자 명단 (club.member), parameters: [ { $ref: "#/components/parameters/id" }, { name: rid, in: path, required: true, schema: { type: string } } ], responses: { "200": { description: OK } } }
+
+  # ============ §7 신청·예치·락·출금 (기간 제한형 에스크로) ============
+  /meetings/{id}/rounds/{rid}/deposit:
+    post:
+      tags: [Escrow]
+      summary: 차수 예치 — 포인트 차감(부족분 자동 충전 유도) (verified)
+      description: |
+        부원이 차수 예상 금액을 포인트로 예치. 보유 포인트 우선 차감, 부족분은 카카오페이 충전 후 예치.
+        OPEN 상태에서만 가능. 멱등(Idempotency-Key).
+      parameters: [ { $ref: "#/components/parameters/id" }, { $ref: "#/components/parameters/rid" }, { $ref: "#/components/parameters/idempotencyKey" } ]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { topUp: { type: integer, description: 부족분 충전액(포인트) } } } } } }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Deposit" } } } }
+        "402": { $ref: "#/components/responses/Error" }   # INSUFFICIENT_POINTS
+        "409": { $ref: "#/components/responses/Error" }   # ROUND_FULL / DEADLINE_PASSED / LOCKED
+    delete:
+      tags: [Escrow]
+      summary: 마감 전 예치 취소 → 포인트 즉시 환불 (self)
+      description: OPEN 상태에서만 허용. LOCKED(만남 시각 경과) 이후 호출 시 409 LOCKED.
+      parameters: [ { $ref: "#/components/parameters/id" }, { $ref: "#/components/parameters/rid" } ]
+      responses:
+        "200": { description: 환불 완료, content: { application/json: { schema: { $ref: "#/components/schemas/Deposit" } } } }
+        "409": { $ref: "#/components/responses/Error" }   # LOCKED
+  /meetings/{id}/escrow:
+    get: { tags: [Escrow], summary: 모임 에스크로 상태 — 잔액·락·참여 인원 (club.member), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Escrow" } } } } } }
+  /meetings/{id}/lock:
+    post:
+      tags: [Escrow]
+      summary: 만남 시각 도달 → 락 (system)
+      description: |
+        스케줄러가 만남 시각에 호출. 취소 API 차단 + 총무 출금 권한 활성화. 모임 단위 직렬화 락으로
+        마감 직전 동시 취소/출금 경합을 순차 처리(인터셉트 방어). 멱등.
+      security: []
+      parameters: [ { $ref: "#/components/parameters/id" } ]
+      responses: { "200": { description: LOCKED } }
+  /meetings/{id}/payout-consent/request:
+    post:
+      tags: [Escrow]
+      summary: 출금 동의 요청 — 락 스냅샷 전원에게 발송 (club.treasurer)
+      description: |
+        LOCKED 이후 총무가 호출. 락 시점에 예치한 참여자(스냅샷) 전원에게 출금 동의 요청 푸시를 발송.
+        재호출 시 미응답자에게만 재요청(멱등). 동의 정족수(quorum)는 LOCKED 스냅샷으로 고정되어
+        이후 예치 변동의 영향을 받지 않는다.
+      parameters: [ { $ref: "#/components/parameters/id" } ]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/PayoutConsent" } } } }
+        "409": { $ref: "#/components/responses/Error" }   # NOT_LOCKED
+  /meetings/{id}/payout-consent:
+    get:
+      tags: [Escrow]
+      summary: 출금 동의 현황 — N/N·명단·대기·거절 (club.member)
+      parameters: [ { $ref: "#/components/parameters/id" } ]
+      responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/PayoutConsent" } } } } }
+  /meetings/{id}/payout-consent/vote:
+    post:
+      tags: [Escrow]
+      summary: 출금 동의/거절 — 락 스냅샷 참여자만 (self·participant)
+      description: |
+        락 시점 스냅샷에 포함된 부원만 투표 가능(그 외 403). agree=동의, reject=거절(사유 선택).
+        전원 agree가 되면 PayoutConsent.allAgreed=true가 되어 총무 출금이 열린다. 멱등(마지막 값 반영).
+      parameters: [ { $ref: "#/components/parameters/id" } ]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [vote], properties: { vote: { type: string, enum: [agree, reject] }, reason: { type: string, nullable: true } } } } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/PayoutConsent" } } } }
+        "403": { $ref: "#/components/responses/Error" }   # NOT_PARTICIPANT
+  /meetings/{id}/payout:
+    post:
+      tags: [Escrow]
+      summary: 총무 출금(현금화) — LOCKED + 전원 동의 이후만, 정산 타이머 시작 (club.treasurer)
+      description: |
+        모인 에스크로 포인트를 총무 본인 계좌로 인출. OPEN 상태면 403/409로 차단(출금 잠김).
+        락 스냅샷 전원 동의(PayoutConsent.allAgreed)가 아니면 409(CONSENT_PENDING)로 차단.
+        출금 성공 시 정산 데드라인 타이머(예: 12h) 시작. 멱등.
+      parameters: [ { $ref: "#/components/parameters/id" }, { $ref: "#/components/parameters/idempotencyKey" } ]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { bankAccountId: { type: string } } } } } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Payout" } } } }
+        "409": { $ref: "#/components/responses/Error" }   # NOT_LOCKED / CONSENT_PENDING / ALREADY_WITHDRAWN
+
+  # ============ §8 증빙·반납·자동정산 ============
+  /meetings/{id}/settlement/receipts:
+    post:
+      tags: [Settlement]
+      summary: 영수증 업로드 → OCR 추출 (club.treasurer)
+      description: 영수증 이미지 업로드 시 OCR이 금액·가게명·일시 추출. 추출 금액이 지출 입력에 강제 매핑(위조 차단).
+      parameters: [ { $ref: "#/components/parameters/id" } ]
+      requestBody: { required: true, content: { multipart/form-data: { schema: { type: object, properties: { file: { type: string, format: binary } } } } } }
+      responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/OcrResult" } } } } }
+  /meetings/{id}/settlement/return:
+    post:
+      tags: [Settlement]
+      summary: 실지출 입력 + 잔액 포인트 반납 (club.treasurer)
+      description: |
+        실제 지출액 입력(OCR 검증값과 매핑) + 출금액−지출액 = 남은 잔액 포인트를 시스템에 반납.
+        데드라인 초과 시 신용등급 패널티가 별도 트리거된다. 멱등.
+      parameters: [ { $ref: "#/components/parameters/id" }, { $ref: "#/components/parameters/idempotencyKey" } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [actualSpent, receiptIds], properties: { actualSpent: { type: integer }, receiptIds: { type: array, items: { type: string } } } } } } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Settlement" } } } }
+        "422": { $ref: "#/components/responses/Error" }   # SETTLEMENT_INVALID / OCR_MISMATCH
+  /meetings/{id}/settlement/auto:
+    post:
+      tags: [Settlement]
+      summary: 자동 정산 — 반납금 ÷ 참여인원 균등 환급 (system)
+      description: 반납 완료 시 시스템이 1인당 환급액을 계산해 부원 지갑으로 포인트 환급. 에스크로 잔액 0으로 마감(DONE).
+      security: []
+      parameters: [ { $ref: "#/components/parameters/id" } ]
+      responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Settlement" } } } } }
+  /settlements/{id}:
+    get: { tags: [Settlement], summary: 정산 상세 — 취합·출금·실지출·반납·1인당 (club.member), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Settlement" } } } } } }
+  /me/refunds:
+    get: { tags: [Settlement], summary: 내 정산 환급 내역 (self), responses: { "200": { description: OK } } }
+
+  # ============ §9 포인트 지갑·충전·현금화 ============
+  /me/wallet:
+    get: { tags: [Wallet], summary: 내 포인트 잔액 (self), responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Wallet" } } } } } }
+  /me/wallet/transactions:
+    get: { tags: [Wallet], summary: 포인트 거래 내역(원장) (self), parameters: [ { $ref: "#/components/parameters/cursor" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/LedgerPage" } } } } } }
+  /me/wallet/charge:
+    post:
+      tags: [Wallet]
+      summary: 카카오페이로 포인트 충전 — 수수료 0, 멱등 (verified)
+      description: 카카오페이 결제로 포인트 충전. ready→approve→webhook 멱등 합류(partner_order_id 기준). 충전 수수료 미수취.
+      parameters: [ { $ref: "#/components/parameters/idempotencyKey" } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [amount], properties: { amount: { type: integer, minimum: 1000 } } } } } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ChargeReady" } } } }
+        "502": { $ref: "#/components/responses/Error" }
+  /me/wallet/cashout:
+    post:
+      tags: [Wallet]
+      summary: 포인트 → 본인 계좌 현금화 — 수수료 0, 멱등 (self)
+      description: 보유 포인트를 본인 명의 계좌로 출금. 회원 간 송금은 제공하지 않음(선불업 유예 전제). 출금 수수료 미수취.
+      parameters: [ { $ref: "#/components/parameters/idempotencyKey" } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [amount, bankAccountId], properties: { amount: { type: integer }, bankAccountId: { type: string } } } } } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Cashout" } } } }
+        "402": { $ref: "#/components/responses/Error" }   # INSUFFICIENT_POINTS
+  /payments/kakao/webhook:
+    post:
+      tags: [Wallet]
+      summary: 카카오페이 비동기 통지 — 충전 확인·서명 검증·멱등 (system)
+      security: []
+      requestBody: { required: true, content: { application/json: { schema: { type: object, properties: { tid: { type: string }, status: { type: string }, partner_order_id: { type: string }, approved_at: { type: string, format: date-time } } } } } }
+      responses: { "200": { description: ACK } }
+
+  # ============ §10 쇼·Showts·DM ============
+  /feed:
+    get: { tags: [Show], summary: 쇼 피드 (auth), parameters: [ { $ref: "#/components/parameters/cursor" } ], responses: { "200": { description: OK } } }
+  /posts/{id}/like:
+    post: { tags: [Show], summary: 좋아요 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "204": { description: No Content } } }
+    delete: { tags: [Show], summary: 좋아요 취소 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "204": { description: No Content } } }
+  /posts/{id}/comments:
+    get: { tags: [Show], summary: 댓글 조회 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+    post: { tags: [Show], summary: 댓글 작성 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "201": { description: Created } } }
+  /showts:
+    get: { tags: [Show], summary: 숏폼 피드 — 승인분만 (auth), parameters: [ { $ref: "#/components/parameters/cursor" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ShowtsPage" } } } } } }
+    post: { tags: [Show], summary: 영상 업로드(≤60s) + 장부 태깅 → 검수 큐 (verified), requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/ShowtsCreate" } } } }, responses: { "201": { description: Created } } }
+  /showts/{id}/like:
+    post: { tags: [Show], summary: 좋아요 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "204": { description: No Content } } }
+  /showts/{id}/comments:
+    post: { tags: [Show], summary: 댓글 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "201": { description: Created } } }
+  /dm/threads:
+    get: { tags: [Show], summary: DM 목록 (auth), responses: { "200": { description: OK } } }
+  /dm/threads/{id}/messages:
+    get: { tags: [Show], summary: 대화 조회 (auth), parameters: [ { $ref: "#/components/parameters/id" }, { $ref: "#/components/parameters/cursor" } ], responses: { "200": { description: OK } } }
+    post: { tags: [Show], summary: 메시지 전송 — 운영팀 스레드는 CS로 (auth), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "201": { description: Created } } }
+
+  # ============ §11 어드민 — 운영 ============
+  /admin/dashboard:
+    get: { tags: [Admin-Ops], summary: KPI·차트 (op.*), responses: { "200": { description: OK } } }
+  /admin/clubs:
+    get: { tags: [Admin-Ops], summary: 모임 심사 큐 (op.ops), responses: { "200": { description: OK } } }
+  /admin/clubs/{id}:
+    patch: { tags: [Admin-Ops], summary: 심사·정지/해제 (op.ops), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+  /admin/users:
+    get: { tags: [Admin-Ops], summary: 회원 조회 (op.ops), responses: { "200": { description: OK } } }
+  /admin/users/{id}:
+    patch: { tags: [Admin-Ops], summary: 계정 정지 (op.ops), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+  /admin/users/{id}/kyc-decision:
+    post: { tags: [Admin-Ops], summary: KYC 승인/반려 (op.ops), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+  /admin/campaigns:
+    get: { tags: [Admin-Ops], summary: 캠페인(모임) 모니터 (op.ops), responses: { "200": { description: OK } } }
+  /admin/posts:
+    patch: { tags: [Admin-Ops], summary: 게시물 모더레이션 (op.content), responses: { "200": { description: OK } } }
+  /admin/showts:
+    patch: { tags: [Admin-Ops], summary: Showts 검수 승인/반려 (op.content), responses: { "200": { description: OK } } }
+  /admin/reports:
+    get: { tags: [Admin-Ops], summary: 신고 큐 (op.content), responses: { "200": { description: OK } } }
+  /admin/push:
+    post: { tags: [Admin-Ops], summary: 세그먼트 푸시 발송/예약 (op.ops), requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/PushCampaign" } } } }, responses: { "200": { description: OK } } }
+
+  # ============ §12 어드민 — 재무·CS·정책 ============
+  /admin/deposits:
+    get: { tags: [Admin-Finance], summary: 입금 대사 큐 (op.finance), responses: { "200": { description: OK } } }
+  /admin/deposits/{id}/confirm:
+    post: { tags: [Admin-Finance], summary: 수동 입금 확인 → 장부 반영 (op.finance), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+  /admin/payouts:
+    get: { tags: [Admin-Finance], summary: 지급(환불) 승인 큐 (op.finance), responses: { "200": { description: OK } } }
+  /admin/payouts/{id}/decision:
+    post: { tags: [Admin-Finance], summary: 지급 승인/반려 → 카카오페이 실행 (op.finance), parameters: [ { $ref: "#/components/parameters/id" } ], requestBody: { content: { application/json: { schema: { type: object, properties: { decision: { type: string, enum: [approve, reject] }, reason: { type: string } } } } } }, responses: { "200": { description: OK } } }
+  /admin/ledger:
+    get: { tags: [Admin-Finance], summary: 전체 거래 원장·CSV (op.finance), responses: { "200": { description: OK } } }
+  /admin/reports/export:
+    get: { tags: [Admin-Finance], summary: 월간 정산/거래 PDF·CSV (op.finance), parameters: [ { name: format, in: query, schema: { type: string, enum: [csv, pdf] } } ], responses: { "200": { description: OK } } }
+  /admin/tickets:
+    get: { tags: [Admin-Finance], summary: CS 문의 목록 (op.cs), responses: { "200": { description: OK } } }
+  /admin/tickets/{id}/reply:
+    post: { tags: [Admin-Finance], summary: 답변·상태 변경·환불 재처리 (op.cs), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
+  /admin/settings:
+    get: { tags: [Admin-Finance], summary: 정책 조회 (op.super), responses: { "200": { description: OK } } }
+    patch: { tags: [Admin-Finance], summary: 수수료·템플릿·권한 변경 (op.super), responses: { "200": { description: OK } } }
+  /admin/audit-logs:
+    get: { tags: [Admin-Finance], summary: 감사 로그 (op.super), responses: { "200": { description: OK } } }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    id: { name: id, in: path, required: true, schema: { type: string } }
+    rid: { name: rid, in: path, required: true, schema: { type: string }, description: 차수(Round) ID }
+    cursor: { name: cursor, in: query, schema: { type: string } }
+    limit: { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+    idempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, format: uuid } }
+  responses:
+    Error:
+      description: 표준 에러
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    User:
+      description: User
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/User" }
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string, description: "INVALID_REQUEST·UNAUTHENTICATED·FORBIDDEN·KYC_REQUIRED·NOT_FOUND·CONFLICT·ROUND_FULL·DEADLINE_PASSED·ALREADY_PAID·SETTLEMENT_INVALID·RATE_LIMITED·PAYMENT_PROVIDER_ERROR·INTERNAL" }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+    AuthToken:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        needsOnboarding: { type: boolean }
+        user: { $ref: "#/components/schemas/User" }
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        nickname: { type: string }
+        email: { type: string }
+        photo: { type: string }
+        bio: { type: string }
+        interests: { type: array, items: { type: string } }
+        verified: { type: boolean }
+        provider: { type: string, enum: [kakao, apple, google] }
+        createdAt: { type: string, format: date-time }
+    ProfileUpdate:
+      type: object
+      properties:
+        nickname: { type: string }
+        bio: { type: string, maxLength: 60 }
+        interests: { type: array, items: { type: string } }
+        photo: { type: string }
+    TrustProfile:
+      type: object
+      description: 산식은 서버 내부. 결과 필드만 노출.
+      properties:
+        score: { type: integer, minimum: 0, maximum: 100 }
+        grade: { type: string, enum: [seed, sprout, trust, good, best] }
+        temp: { type: number, description: "매너온도 ℃ (기본 36.5)" }
+        manner:
+          type: object
+          properties:
+            praises: { type: integer }
+            punctual: { type: integer }
+            noshow: { type: integer }
+            response: { type: integer }
+        receiptRate: { type: integer }
+        hosted: { type: integer }
+        joined: { type: integer }
+        delays: { type: integer }
+    PublicProfile:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          properties:
+            trust: { $ref: "#/components/schemas/TrustProfile" }
+            followers: { type: integer }
+            following: { type: integer }
+    NotificationPrefs:
+      type: object
+      properties:
+        funding: { type: boolean }
+        show: { type: boolean }
+        member: { type: boolean }
+    Notification:
+      type: object
+      properties:
+        id: { type: string }
+        kind: { type: string }
+        title: { type: string }
+        body: { type: string }
+        action: { type: string, description: "딥링크" }
+        unread: { type: boolean }
+        time: { type: string, format: date-time }
+    NotificationPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Notification" } }
+        nextCursor: { type: string, nullable: true }
+    Wallet:
+      type: object
+      properties:
+        id: { type: string }
+        balance: { type: integer, description: "포인트 잔액(정수, 1P=1원)" }
+        currency: { type: string, default: KRW }
+        accountLabel: { type: string }
+    LedgerEntry:
+      type: object
+      properties:
+        id: { type: string }
+        ownerType: { type: string, enum: [user, club, escrow] }
+        type: { type: string, enum: [charge, deposit, refund_cancel, lock, payout_treasurer, return, settle_refund, cashout, penalty] }
+        amount: { type: integer, description: "부호 포함 포인트" }
+        title: { type: string }
+        date: { type: string, format: date-time }
+    LedgerPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/LedgerEntry" } }
+        nextCursor: { type: string, nullable: true }
+    Deposit:
+      type: object
+      properties:
+        id: { type: string }
+        roundId: { type: string }
+        userId: { type: string }
+        amount: { type: integer, description: "예치 포인트" }
+        status: { type: string, enum: [deposited, refunded, locked, settled_refund] }
+        depositedAt: { type: string, format: date-time }
+    Escrow:
+      type: object
+      properties:
+        meetingId: { type: string }
+        state: { type: string, enum: [OPEN, LOCKED, CONSENT, WITHDRAWN, SETTLING, DONE] }
+        balance: { type: integer, description: "에스크로 잔액 포인트" }
+        participants: { type: integer }
+        lockAt: { type: string, format: date-time, description: "만남 시각(락 시점)" }
+        settlementDeadline: { type: string, format: date-time, nullable: true, description: "총무 출금 후 정산 데드라인" }
+    Payout:
+      type: object
+      properties:
+        id: { type: string }
+        meetingId: { type: string }
+        amount: { type: integer }
+        bankAccountId: { type: string }
+        status: { type: string, enum: [withdrawn, overdue, penalized] }
+        withdrawnAt: { type: string, format: date-time }
+        settlementDeadline: { type: string, format: date-time }
+    PayoutConsent:
+      type: object
+      description: "락 시점 스냅샷 참여자 전원 동의 게이트. allAgreed=true일 때만 총무 payout 허용."
+      properties:
+        meetingId: { type: string }
+        lockAt: { type: string, format: date-time, description: "동의 정족수를 고정한 락 시점" }
+        required: { type: integer, description: "스냅샷 참여 인원(분모)" }
+        agreed: { type: integer, description: "동의 인원" }
+        allAgreed: { type: boolean, description: "agreed == required" }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              userId: { type: string }
+              name: { type: string }
+              vote: { type: string, enum: [pending, agree, reject] }
+              reason: { type: string, nullable: true }
+              votedAt: { type: string, format: date-time, nullable: true }
+    OcrResult:
+      type: object
+      properties:
+        receiptId: { type: string }
+        amount: { type: integer, description: "OCR 추출 결제 금액(강제 매핑)" }
+        store: { type: string }
+        paidAt: { type: string, format: date-time }
+        confidence: { type: number, format: float }
+        imageUrl: { type: string }
+    ChargeReady:
+      type: object
+      properties:
+        tid: { type: string }
+        redirectUrl: { type: string }
+        appScheme: { type: string }
+        amount: { type: integer }
+    Cashout:
+      type: object
+      properties:
+        id: { type: string }
+        amount: { type: integer }
+        bankAccountId: { type: string }
+        status: { type: string, enum: [requested, processing, completed, failed] }
+    ClubCreate:
+      type: object
+      required: [name, category]
+      properties:
+        name: { type: string }
+        category: { type: string }
+        intro: { type: string, maxLength: 200 }
+        coverImg: { type: string }
+        capacity: { type: integer }
+        openRecruit: { type: boolean }
+        tags: { type: array, items: { type: string } }
+    Club:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        category: { type: string }
+        coverImg: { type: string }
+        intro: { type: string }
+        memberCount: { type: integer }
+        tags: { type: array, items: { type: string } }
+        ledgerBalance: { type: integer }
+        createdYear: { type: string }
+    ClubTrust:
+      type: object
+      properties:
+        budgetErrorRate: { type: number }
+        refundCompleteRate: { type: number }
+        avgSettleDays: { type: number }
+        grade: { type: string }
+    ClubLedger:
+      type: object
+      properties:
+        totalBalance: { type: integer }
+        history: { type: array, items: { type: object } }
+    ApplicationForm:
+      type: object
+      properties:
+        title: { type: string }
+        desc: { type: string }
+        builtIns: { type: object, additionalProperties: { type: boolean } }
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              type: { type: string, enum: [short, long, choice, checkbox] }
+              label: { type: string }
+              required: { type: boolean }
+              choices: { type: array, items: { type: string } }
+    JoinApplicationCreate:
+      type: object
+      required: [answers]
+      properties:
+        answers:
+          type: array
+          items:
+            type: object
+            properties:
+              questionId: { type: string }
+              value: { oneOf: [ { type: string }, { type: array, items: { type: string } } ] }
+        note: { type: string }
+    Round:
+      type: object
+      properties:
+        id: { type: string }
+        label: { type: string }
+        title: { type: string }
+        time: { type: string }
+        place: { type: string }
+        cost: { type: integer, description: "차수별 1인 비용(원)" }
+        min: { type: integer, nullable: true }
+        max: { type: integer, nullable: true }
+        cur: { type: integer }
+        status: { type: string, enum: [recruiting, closing, full] }
+    CostItem:
+      type: object
+      properties:
+        label: { type: string }
+        amount: { type: integer }
+        fixed: { type: boolean, description: "true=고정비(노쇼 환불 불가)" }
+    MeetingCreate:
+      type: object
+      required: [title, datetime, rounds]
+      properties:
+        title: { type: string }
+        category: { type: string }
+        datetime: { type: string, format: date-time }
+        fundingDeadline: { type: string, format: date-time }
+        description: { type: string }
+        coverImg: { type: string }
+        costBreakdown: { type: array, items: { $ref: "#/components/schemas/CostItem" } }
+        rounds: { type: array, items: { $ref: "#/components/schemas/Round" } }
+        rules: { type: array, items: { type: string } }
+        noShowDeposit: { type: integer, description: "번개: 차수당 예약금(원)" }
+    Meeting:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [club, flash] }
+        clubId: { type: string, nullable: true }
+        hostId: { type: string }
+        title: { type: string }
+        category: { type: string }
+        datetime: { type: string, format: date-time }
+        fundingDeadline: { type: string, format: date-time }
+        place: { type: string }
+        description: { type: string }
+        coverImg: { type: string }
+        costBreakdown: { type: array, items: { $ref: "#/components/schemas/CostItem" } }
+        perHead: { type: integer }
+        currentPeople: { type: integer }
+        rounds: { type: array, items: { $ref: "#/components/schemas/Round" } }
+        rules: { type: array, items: { type: string } }
+        status: { type: string, enum: [recruiting, closing, full, ended] }
+    MeetingPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Meeting" } }
+        nextCursor: { type: string, nullable: true }
+    Attendance:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [pending_payment, paid, cancelled, noshow] }
+        rounds: { type: array, items: { type: string } }
+        amount: { type: integer }
+        payment: { type: object, properties: { required: { type: boolean } } }
+    PaymentReady:
+      type: object
+      properties:
+        tid: { type: string }
+        redirectUrl: { type: string }
+        appScheme: { type: string }
+        amount: { type: integer }
+    PaymentResult:
+      type: object
+      properties:
+        paymentId: { type: string }
+        status: { type: string, enum: [completed, failed] }
+        attendance: { $ref: "#/components/schemas/Attendance" }
+        ledgerEntries: { type: array, items: { type: string } }
+    Refund:
+      type: object
+      properties:
+        refundId: { type: string }
+        amount: { type: integer }
+        status: { type: string, enum: [requested, processing, completed, failed] }
+        breakdown: { type: object, properties: { variable: { type: integer }, fixedRetained: { type: integer } } }
+    SettlementInput:
+      type: object
+      properties:
+        actualSpent: { type: integer }
+        expenseItems: { type: array, items: { $ref: "#/components/schemas/CostItem" } }
+        receiptFileIds: { type: array, items: { type: string } }
+    Settlement:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [open, withdrawn, settling, returned, done] }
+        collected: { type: integer, description: "취합(예치 합)" }
+        withdrawn: { type: integer, description: "총무 출금액" }
+        spent: { type: integer, description: "실지출(OCR 검증)" }
+        returned: { type: integer, description: "반납 잔액 포인트" }
+        perHeadRefund: { type: integer, description: "1인당 환급" }
+        refunds:
+          type: array
+          items:
+            type: object
+            properties:
+              userId: { type: string }
+              amount: { type: integer }
+              status: { type: string }
+    PostCreate:
+      type: object
+      properties:
+        text: { type: string }
+        tag: { type: string }
+        img: { type: string }
+    ShowtsCreate:
+      type: object
+      properties:
+        caption: { type: string }
+        tag: { type: string }
+        videoUrl: { type: string }
+        ledgerTag: { type: string, description: "투명 장부 인증(settlementId)" }
+    ShowtsPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              authorId: { type: string }
+              handle: { type: string }
+              caption: { type: string }
+              videoUrl: { type: string }
+              duration: { type: string }
+              likes: { type: integer }
+              comments: { type: integer }
+              ledgerTag: { type: string, nullable: true }
+              status: { type: string, enum: [pending, flagged, approved, rejected] }
+        nextCursor: { type: string, nullable: true }
+    PushCampaign:
+      type: object
+      properties:
+        audience: { type: string, enum: [all, unpaid, treasurer, dormant30] }
+        preset: { type: string, enum: [remind, deadline, event, maintenance] }
+        text: { type: string, description: "{이름} 변수 치환" }
+        scheduledAt: { type: string, format: date-time, nullable: true }

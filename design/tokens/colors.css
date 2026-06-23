@@ -1,0 +1,122 @@
+/* ============================================================
+   모이쇼 — Color System
+   "신뢰감을 주는 활기찬 핀테크 (Vibrant Fintech)"
+   계정계 시스템의 신뢰도 + 커뮤니티의 에너지
+   ============================================================ */
+
+:root {
+  /* ---------- Brand: 모이쇼 블루 (Primary) ----------
+     신뢰감을 주는 블루 + 활기찬 채도. 버튼 / 펀딩 게이지 / 핵심 링크. */
+  --moisho-blue-50:  #EEF2FF;
+  --moisho-blue-100: #DFE6FF;
+  --moisho-blue-200: #BECCFF;
+  --moisho-blue-300: #94A9FF;
+  --moisho-blue-400: #6781FF;
+  --moisho-blue-500: #3B5CFF;  /* ← 핵심 브랜드 컬러 */
+  --moisho-blue-600: #2E47E6;
+  --moisho-blue-700: #2438B8;
+  --moisho-blue-800: #1E2E8F;
+  --moisho-blue-900: #1A2870;
+
+  /* ---------- Point: 네온 퍼플 (Secondary) ----------
+     트렌디함 + 모임의 즐거움. '쇼(Show)' 피드 / 이벤트 / 독촉 알림. */
+  --neon-purple-50:  #F4EEFF;
+  --neon-purple-100: #E9DDFF;
+  --neon-purple-200: #D3BCFF;
+  --neon-purple-300: #B68FFF;
+  --neon-purple-400: #9F6BFF;
+  --neon-purple-500: #8C52FF;  /* ← 포인트 컬러 */
+  --neon-purple-600: #7838F0;
+  --neon-purple-700: #6228CC;
+  --neon-purple-800: #4D1F9E;
+  --neon-purple-900: #3B1879;
+
+  /* ---------- Semantic: Success — 민트 그린 ----------
+     입금 완료 / 정산 마감. 투명하고 안전한 완료의 느낌. */
+  --mint-50:  #E5FBF3;
+  --mint-100: #C7F6E5;
+  --mint-300: #67E3BC;
+  --mint-500: #00C781;  /* ← Success */
+  --mint-600: #00A86D;
+  --mint-700: #008857;
+
+  /* ---------- Semantic: Error/Warning — 코랄 레드 ----------
+     미입금 / 마감 임박. 불쾌하지 않게 주의를 주는 부드러운 레드. */
+  --coral-50:  #FFECEC;
+  --coral-100: #FFD6D6;
+  --coral-300: #FF9A9A;
+  --coral-500: #FF4B4B;  /* ← Error / Warning */
+  --coral-600: #ED3535;
+  --coral-700: #C82424;
+
+  /* ---------- Semantic: Caution — 앰버 (마감 임박 보조) ---------- */
+  --amber-50:  #FFF6E5;
+  --amber-100: #FFE9BF;
+  --amber-500: #FFA722;
+  --amber-600: #F08F00;
+
+  /* ---------- Neutral / Gray ----------
+     기본 배경 화이트, 카드 배경 옅은 그레이로 수치 분리. */
+  --white:    #FFFFFF;
+  --gray-25:  #FAFBFD;
+  --gray-50:  #F4F6FA;  /* ← 카드 레이아웃 배경 */
+  --gray-100: #EBEEF4;
+  --gray-200: #DDE2EC;
+  --gray-300: #C5CCDA;
+  --gray-400: #9AA3B5;
+  --gray-500: #6E7689;
+  --gray-600: #525B6E;
+  --gray-700: #3C4456;
+  --gray-800: #272D3B;
+  --gray-900: #161A24;
+
+  /* ============================================================
+     SEMANTIC ALIASES — reach for these in product UI
+     ============================================================ */
+
+  /* Brand */
+  --color-primary:        var(--moisho-blue-500);
+  --color-primary-hover:  var(--moisho-blue-600);
+  --color-primary-press:  var(--moisho-blue-700);
+  --color-primary-soft:   var(--moisho-blue-50);
+  --color-primary-on:     var(--white);
+
+  --color-accent:         var(--neon-purple-500);
+  --color-accent-hover:   var(--neon-purple-600);
+  --color-accent-soft:    var(--neon-purple-50);
+  --color-accent-on:      var(--white);
+
+  /* Status */
+  --color-success:        var(--mint-500);
+  --color-success-soft:   var(--mint-50);
+  --color-success-strong: var(--mint-700);
+  --color-danger:         var(--coral-500);
+  --color-danger-soft:    var(--coral-50);
+  --color-danger-strong:  var(--coral-700);
+  --color-warning:        var(--amber-500);
+  --color-warning-soft:   var(--amber-50);
+
+  /* Surfaces */
+  --surface-page:     var(--white);
+  --surface-card:     var(--white);
+  --surface-sunken:   var(--gray-50);   /* 계좌 정보 / 예산안 수치 카드 배경 */
+  --surface-raised:   var(--white);
+  --surface-overlay:  rgba(22, 26, 36, 0.45);
+  --surface-inverse:  var(--gray-900);
+
+  /* Text */
+  --text-strong:    var(--gray-900);  /* Display / 금액 */
+  --text-title:     var(--gray-800);  /* Title / 모임명 */
+  --text-body:      var(--gray-700);  /* Body 본문 */
+  --text-muted:     var(--gray-500);  /* Caption 보조 */
+  --text-disabled:  #767F92;          /* 메타/타임스탬프 — gray-400보다 진하게(대비 ↑, WCAG 근접) */
+  --text-faint:     var(--gray-400);  /* 순수 장식용(아이콘/플레이스홀더) */
+  --text-on-brand:  var(--white);
+  --text-link:      var(--moisho-blue-500);
+
+  /* Borders */
+  --border-subtle:  var(--gray-100);
+  --border-default: var(--gray-200);
+  --border-strong:  var(--gray-300);
+  --border-focus:   var(--moisho-blue-500);
+}

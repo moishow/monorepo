@@ -1,0 +1,442 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>모이쇼 — 제품 요구사항 명세(PRD)</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet"><style>
+:root{--ink:#1f2430;--mut:#5b6170;--faint:#969cab;--line:#e2e4e9;--line2:#eef0f3;--paper:#ece9e1;--white:#fff;--ac:#3b5cff;--acsoft:#eef1ff;--pp:#7c5cff;--ppsoft:#f1ecff;--ok:#1f9d57;--oksoft:#e7f6ee;--warn:#c47f00;--warnsoft:#fdf3e2;--dang:#e5484d;--dangsoft:#fdecec;}
+*{box-sizing:border-box;}
+html,body{margin:0;}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;font-size:13.5px;}
+.page{width:816px;margin:28px auto;background:var(--white);box-shadow:0 2px 14px rgba(0,0,0,.09);border-radius:3px;padding:58px 56px;position:relative;}
+.pg-foot{position:absolute;bottom:24px;left:56px;font-size:11px;color:var(--faint);letter-spacing:.02em;}
+.pg-num{position:absolute;bottom:24px;right:56px;font-size:11px;color:var(--faint);}
+/* cover */
+.cover{display:flex;flex-direction:column;min-height:940px;}
+.cover .tagline{font-size:13px;letter-spacing:.18em;color:var(--ac);font-weight:600;text-transform:uppercase;}
+.cover h1{font-size:48px;line-height:1.08;margin:14px 0 0;letter-spacing:-.025em;font-weight:700;}
+.cover .sub{font-size:18px;color:var(--mut);margin-top:16px;max-width:580px;}
+.cover .rule{height:3px;width:64px;background:var(--ink);margin:26px 0;}
+.cover .pill{display:inline-flex;gap:7px;align-items:center;font-size:12px;font-weight:600;color:var(--pp);background:var(--ppsoft);border-radius:99px;padding:5px 13px;width:fit-content;}
+.cover .meta{margin-top:auto;display:grid;grid-template-columns:repeat(2,1fr);gap:14px 30px;border-top:1px solid var(--line);padding-top:22px;}
+.cover .meta b{display:block;font-size:11px;letter-spacing:.04em;color:var(--faint);text-transform:uppercase;margin-bottom:3px;}
+.cover .meta span{font-size:14px;font-weight:600;}
+.toc{margin-top:34px;}
+.toc h3{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin:0 0 12px;}
+.toc ol{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:0 40px;}
+.toc li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dotted var(--line);font-size:13px;}
+.toc li span:last-child{color:var(--faint);}
+/* sections */
+.doc-h{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ac);font-weight:700;margin:0 0 4px;}
+.doc-t{font-size:25px;font-weight:700;margin:0 0 7px;letter-spacing:-.01em;}
+.doc-lead{font-size:13.5px;color:var(--mut);margin:0 0 24px;max-width:640px;}
+h2.sec{font-size:16px;font-weight:700;margin:26px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--ink);}
+h3.sub{font-size:13px;font-weight:700;margin:18px 0 8px;color:var(--ink);}
+p.note{font-size:12.5px;color:var(--mut);margin:8px 0;}
+.divider{border:none;border-top:1px solid var(--line);margin:0 0 24px;}
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:11.5px;margin:8px 0 4px;}
+th{background:var(--line2);color:var(--faint);font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:6px 9px;font-weight:700;border-bottom:1px solid var(--line);}
+td{padding:6px 9px;border-bottom:1px solid var(--line2);color:var(--mut);vertical-align:top;}
+td b{color:var(--ink);font-weight:600;}
+td.k{font-family:"IBM Plex Mono","SFMono-Regular",monospace;color:var(--ac);font-weight:600;white-space:nowrap;}
+td.ty{font-family:"IBM Plex Mono",monospace;color:var(--pp);font-size:10.5px;white-space:nowrap;}
+/* entity card */
+.ent{border:1px solid var(--line);border-radius:9px;padding:13px 15px;margin-bottom:14px;break-inside:avoid;}
+.ent-h{display:flex;align-items:baseline;gap:9px;margin-bottom:3px;}
+.ent-h h4{margin:0;font-size:14px;font-weight:700;}
+.ent-d{font-size:11.5px;color:var(--mut);margin:0 0 6px;}
+.ent table{margin:4px 0 0;}
+.ent .rel{font-size:11px;color:var(--mut);margin-top:7px;background:var(--line2);border-radius:6px;padding:6px 9px;}
+.ent .rel b{color:var(--ink);}
+/* screen spec */
+.scr{border:1px solid var(--line);border-radius:9px;padding:13px 15px;margin-bottom:13px;break-inside:avoid;}
+.scr-h{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;}
+.scr-id{font-size:11px;font-weight:700;color:var(--ac);background:var(--acsoft);border-radius:5px;padding:2px 7px;white-space:nowrap;}
+.scr-id.ad{color:var(--pp);background:var(--ppsoft);}
+.scr-h h4{margin:0;font-size:15px;font-weight:700;}
+.scr-grp{font-size:10.5px;color:var(--faint);font-weight:600;margin-left:auto;}
+.scr-grp.new{color:#fff;background:var(--ok);border-radius:4px;padding:1px 6px;}
+.scr-p{font-size:12px;color:var(--mut);margin:7px 0 11px;line-height:1.5;}
+.scr-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.scr-cols.three{grid-template-columns:1fr 1fr 1fr;}
+.scr-lab{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);margin:0 0 5px;}
+ul.tight{margin:0;padding:0;list-style:none;}
+ul.tight li{font-size:11.5px;color:var(--mut);padding:2px 0 2px 13px;position:relative;line-height:1.42;}
+ul.tight li::before{content:"·";position:absolute;left:2px;color:var(--ac);font-weight:700;}
+ul.tight.be li::before{content:"⚙";left:0;font-size:9px;color:var(--pp);}
+ul.tight.act li::before{content:"→";color:var(--ac);font-weight:700;}
+/* persona / machine */
+.pcard{border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin-bottom:11px;break-inside:avoid;}
+.pcard h4{margin:0 0 4px;font-size:13.5px;display:flex;align-items:center;gap:8px;}
+.pcard h4 .dot{width:9px;height:9px;border-radius:50%;}
+.pcard .who{font-size:11.5px;color:var(--mut);margin:0 0 6px;}
+.pcard .can{font-size:11.5px;color:var(--ink);}
+.pcard .scope{font-size:10.5px;color:var(--faint);margin-top:4px;}
+.mac{border:1px solid var(--line);border-radius:9px;padding:11px 14px;margin-bottom:10px;break-inside:avoid;}
+.mac h4{margin:0 0 8px;font-size:13px;}
+.states{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:7px;}
+.state{font-size:11px;font-weight:600;border:1.5px solid var(--ink);border-radius:7px;padding:4px 9px;background:#fff;}
+.arr{color:var(--faint);font-weight:700;}
+.mac .mn{font-size:11px;color:var(--mut);line-height:1.45;}
+/* money flow */
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px 0;margin:10px 0 6px;}
+.fstep{border:1.5px solid var(--ink);border-radius:9px;padding:9px 12px;min-width:96px;background:#fff;display:flex;flex-direction:column;justify-content:center;}
+.fstep .fl{font-size:9px;color:var(--ac);font-weight:700;}
+.fstep b{font-size:11.5px;}
+.fstep.acc{background:var(--ink);color:#fff;}.fstep.acc .fl{color:#9fb0ff;}
+.farr{display:flex;align-items:center;color:var(--faint);font-size:16px;padding:0 6px;font-weight:700;}
+/* conn map */
+.conn{display:grid;grid-template-columns:1fr 64px 1fr;align-items:center;gap:7px;margin-bottom:8px;}
+.conn-a,.conn-b{border:1.5px solid var(--ink);border-radius:8px;padding:9px 11px;font-size:11.5px;font-weight:600;}
+.conn-a{border-left:5px solid var(--ac);}.conn-b{border-left:5px solid var(--pp);}
+.conn-x{text-align:center;color:var(--faint);font-weight:700;font-size:11px;}
+.conn-note{grid-column:1/-1;font-size:10px;color:var(--faint);margin:-4px 0 4px 4px;}
+.cols2{columns:2;column-gap:26px;}
+.api{font-family:"IBM Plex Mono",monospace;font-size:11px;}
+.api .m{display:inline-block;font-weight:700;width:46px;}
+.api .get{color:var(--ok);}.api .post{color:var(--ac);}.api .patch{color:var(--warn);}.api .del{color:var(--dang);}
+.callout{border:1px solid var(--line);border-left:4px solid var(--pp);background:var(--ppsoft);border-radius:8px;padding:11px 14px;font-size:12px;color:var(--ink);margin:12px 0;}
+.callout b{color:var(--pp);}
+.tag{display:inline-block;font-size:10px;font-weight:700;color:#fff;background:var(--ok);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:1px;}
+@media print{body{background:none;}.page{width:auto;margin:0;box-shadow:none;border-radius:0;padding:0;}.pg-foot,.pg-num{display:none;}.page+.page{break-before:page;}.ent,.scr,.pcard,.mac,.conn,tr{break-inside:avoid;}*{print-color-adjust:exact;-webkit-print-color-adjust:exact;}}
+@page{margin:0.7in;}
+</style></head><body><div class="page"><span class="pg-foot">표지</span><div class="cover">
+<div class="tagline">Product Requirements Document</div>
+<h1>모이쇼<br>제품 요구사항 명세(PRD)</h1>
+<div class="sub">동아리·소모임 회비/펀딩 핀테크 — 모바일 앱(부원·총무)과 본사 운영 어드민(웹)의 전체 기능·데이터·상태·흐름을 백엔드 설계의 단일 출처로 정의한다.</div>
+<div class="rule"></div>
+<div class="pill">⚙ 백엔드 설계 착수용 · 디자인/기능 전수 반영</div>
+<div class="meta">
+<div><b>문서</b><span>제품 요구사항 명세 v1.0</span></div>
+<div><b>범위</b><span>앱 12화면 · 어드민 12화면 · 22 엔티티</span></div>
+<div><b>출처</b><span>와이어프레임 스펙 · UI 킷 · 디자인 시스템</span></div>
+<div><b>일자</b><span>2026.06.17</span></div>
+</div>
+<div class="toc"><h3>목차</h3><ol>
+<li><span>01 · 문서 개요 · 용어</span><span>p.02</span></li>
+<li><span>02 · 제품 개요 · 콘셉트</span><span>p.02</span></li>
+<li><span>03 · 페르소나 · 권한</span><span>p.03</span></li>
+<li><span>04 · 정보구조(IA)</span><span>p.03</span></li>
+<li><span>05 · 핵심 도메인 · 머니플로우</span><span>p.04</span></li>
+<li><span>06 · 데이터 모델(엔티티)</span><span>p.05</span></li>
+<li><span>07 · 상태 머신</span><span>p.08</span></li>
+<li><span>08 · 앱 기능 명세 AP-01~12</span><span>p.09</span></li>
+<li><span>09 · 어드민 기능 명세 AD-01~12</span><span>p.12</span></li>
+<li><span>10 · 앱 ↔ 어드민 연결 맵</span><span>p.15</span></li>
+<li><span>11 · 알림 · 보이스 · 비기능</span><span>p.16</span></li>
+<li><span>12 · API 표면 초안</span><span>p.17</span></li>
+</ol></div>
+</div><span class="pg-num">1</span></div><div class="page"><span class="pg-foot">개요</span>
+<div class="doc-h">01 · Document Overview</div><div class="doc-t">문서 개요 · 용어</div>
+<p class="doc-lead">본 PRD는 지금까지 확정된 모이쇼의 <b>디자인·기능을 빠짐없이 집약</b>해 백엔드 설계(데이터 모델·상태 전이·API)의 기준을 제공한다. 화면 스펙(와이어프레임), UI 킷(앱·어드민 목업), 디자인 시스템을 단일 소스로 통합했다.</p>
+<table><thead><tr><th style="width:20%">용어</th><th>정의</th></tr></thead><tbody>
+<tr><td><b>가상 장부(Virtual Ledger)</b></td><td>실제 은행 출금 없이 에스크로 통합계좌 내에서 유저/모임 잔액을 논리적으로 분개·표시하는 장부.</td></tr>
+<tr><td><b>에스크로 통합계좌</b></td><td>모이쇼가 운영하는 단일 보관계좌. 모든 입금/지급이 이 계좌를 거치며, 개별 잔액은 LedgerEntry 합으로 산출.</td></tr>
+<tr><td><b>안심 예산안</b></td><td>캠페인 모금액의 항목별 사용처를 사전 공개하는 신뢰 장치. 펀딩 상세(AP-05)의 핵심.</td></tr>
+<tr><td><b>입금 대사(Reconcile)</b></td><td>은행/PG 미연동 환경에서 카카오페이 이체 내역과 캠페인 납부를 대조해 확인하는 과정.</td></tr>
+<tr><td><b>총무 vs 운영자</b></td><td>총무=모임 단위 운영(앱 내장 도구). 운영자=본사 플랫폼 운영(웹 어드민). 권한이 의도적으로 분리됨.</td></tr>
+</tbody></table>
+<div class="callout">⚠ <b>전제</b> · 출시 초기에는 <b>은행/PG 미연동</b>으로, 입금은 카카오페이 이체 + 운영자 대사 기반이다. 수수료는 <b>초기 0%(무료)</b>. 두 전제는 백엔드의 결제·정산 설계에 직접 영향을 준다.</div>
+
+<div class="doc-h" style="margin-top:30px">02 · Product</div><div class="doc-t">제품 개요 · 콘셉트</div>
+<p class="doc-lead">모이쇼는 동아리·소모임의 회비·펀딩을 <b>모으고 → 예산을 짜고 → 투명하게 정산</b>하는 서비스다. "신뢰감을 주는 활기찬 핀테크"를 지향한다.</p>
+<div class="scr-cols">
+<div class="pcard"><h4><span class="dot" style="background:var(--ac)"></span>신뢰 (Trust)</h4><p class="who">계정계 수준의 정확함. 금액·인원·달성률 등 숫자가 화면의 주인공. 안심 예산안·감사 로그·에스크로로 투명성 확보.</p></div>
+<div class="pcard"><h4><span class="dot" style="background:var(--pp)"></span>활기 (Vibrant)</h4><p class="who">모임의 즐거움. 쇼/Showts 소셜, 이벤트 배너, 위트 있는 독촉 보이스로 가벼운 진입.</p></div>
+</div>
+<div class="pcard"><h4><span class="dot" style="background:var(--ok)"></span>친근 (Friendly) · "정중하지만 위트 있는 총무 친구"</h4><p class="who">존댓말·권유형 카피, 메시지당 이모지 1개. 돈이 오가므로 시스템 메시지는 명확하되, 독촉·미입금 안내는 유저가 상처받지 않게 처리.</p></div>
+<span class="pg-num">2</span></div><div class="page"><span class="pg-foot">페르소나 · 정보구조</span>
+<div class="doc-h">03 · Personas & Permissions</div><div class="doc-t">페르소나 · 권한</div>
+<p class="doc-lead">세 역할이 서로 다른 권한 스코프를 가진다. 백엔드 RBAC의 기준.</p>
+<div class="pcard"><h4><span class="dot" style="background:var(--ac)"></span>부원 (Member)</h4><p class="who">모임에 가입해 회비·펀딩을 납부하는 일반 유저.</p><p class="can"><b>권한</b> · 탐색·가입신청·납부·정산 확인·지갑·쇼/Showts·DM·알림 수신</p><p class="scope">스코프 · 본인 + 가입 모임</p></div><div class="pcard"><h4><span class="dot" style="background:var(--ok)"></span>총무 (Leader)</h4><p class="who">모임을 운영하는 부원. 앱 내장 총무 도구 사용.</p><p class="can"><b>권한</b> · 부원 권한 + 캠페인 개설·예산안 작성·정산 마감(지급 요청)·납부 현황·일괄 독촉·가입 승인</p><p class="scope">스코프 · 담당 모임 (본사 어드민과 분리)</p></div><div class="pcard"><h4><span class="dot" style="background:var(--pp)"></span>본사 운영자 (Operator)</h4><p class="who">모이쇼 플랫폼 운영팀. 웹 어드민 사용.</p><p class="can"><b>권한</b> · 모임/유저 심사·KYC 승인·지급 승인·입금 대사·콘텐츠 검수·CS·푸시·리포트·정책</p><p class="scope">스코프 · 플랫폼 전체 (RBAC 권한 분리 + 감사 로그)</p></div>
+
+<h2 class="sec">04 · 정보구조 (IA)</h2>
+<div class="scr-cols">
+<div class="pcard"><h4><span class="dot" style="background:var(--ac)"></span>앱 — 부원 · 총무</h4>
+<p class="scr-lab" style="margin-top:6px">온보딩·발견</p><ul class="tight"><li>로그인/가입 · 탐색 · 클럽 상세/가입</li></ul>
+<p class="scr-lab">클럽·회비·펀딩</p><ul class="tight"><li>클럽 홈 · 펀딩 상세(안심 예산안) · 정산</li></ul>
+<p class="scr-lab">쇼·소셜</p><ul class="tight"><li>쇼 피드 · Showts · DM</li></ul>
+<p class="scr-lab">지갑·총무</p><ul class="tight"><li>내 지갑 · 알림 · 총무 대시보드(내장)</li></ul></div>
+<div class="pcard"><h4><span class="dot" style="background:var(--pp)"></span>어드민 — 본사 운영팀</h4>
+<p class="scr-lab" style="margin-top:6px">운영(코어)</p><ul class="tight"><li>대시보드 · 모임 관리 · 유저 관리 · 회비·펀딩 · 정산·장부</li></ul>
+<p class="scr-lab">고객·콘텐츠</p><ul class="tight"><li>고객센터<span class="tag">신규</span> · 푸시 발송<span class="tag">신규</span> · 쇼 운영 · Showts 검수<span class="tag">신규</span></li></ul>
+<p class="scr-lab">시스템</p><ul class="tight"><li>입금 확인<span class="tag">신규</span> · 리포트 · 설정</li></ul></div>
+</div>
+<span class="pg-num">3</span></div><div class="page"><span class="pg-foot">도메인 · 머니플로우</span>
+<div class="doc-h">05 · Core Domain</div><div class="doc-t">핵심 도메인 · 머니플로우</div>
+<p class="doc-lead">자금은 항상 에스크로 통합계좌를 거친다. 유저/모임의 잔액은 실제 출금이 아니라 가상 장부의 분개(LedgerEntry)로 표현된다.</p>
+<h3 class="sub">납부 → 대사 → 장부 반영</h3>
+<div class="flow">
+<div class="fstep"><span class="fl">AP-05</span><b>유저 납부</b></div><div class="farr">→</div>
+<div class="fstep"><span class="fl">카카오페이</span><b>이체</b></div><div class="farr">→</div>
+<div class="fstep acc"><span class="fl">에스크로</span><b>통합계좌 입금</b></div><div class="farr">→</div>
+<div class="fstep"><span class="fl">AD-10</span><b>입금 대사</b></div><div class="farr">→</div>
+<div class="fstep"><span class="fl">자동/수동</span><b>확인</b></div><div class="farr">→</div>
+<div class="fstep"><span class="fl">AP-10</span><b>장부 반영</b></div>
+</div>
+<p class="note">이름+금액 일치 시 <b>자동 매칭</b>(자동매칭률 KPI). 불일치(가족 명의·부족·초과)·미입금은 운영자 <b>수동 확인</b>. 확인된 납부만 <code>raisedAmount</code>에 집계.</p>
+<h3 class="sub">정산 → 지급 승인 → 환급</h3>
+<div class="flow">
+<div class="fstep"><span class="fl">AP-06</span><b>실지출 입력</b></div><div class="farr">→</div>
+<div class="fstep"><span class="fl">자동계산</span><b>차액·1인당 환급</b></div><div class="farr">→</div>
+<div class="fstep"><span class="fl">AP-06</span><b>정산 마감</b></div><div class="farr">→</div>
+<div class="fstep"><span class="fl">AD-05</span><b>지급 승인</b></div><div class="farr">→</div>
+<div class="fstep acc"><span class="fl">에스크로</span><b>환급/지급 이체</b></div><div class="farr">→</div>
+<div class="fstep"><span class="fl">AP-10</span><b>장부 반영</b></div>
+</div>
+<p class="note">총무가 마감하면 <b>Payout(대기)</b> 생성 → 운영자 승인 시 이체 실행 + <b>LedgerEntry(지급/환급)</b> 기록. 실패 건은 AD-05에서 재처리.</p>
+<h3 class="sub">거래 타입 (LedgerEntry.type)</h3>
+<table><thead><tr><th>타입</th><th>부호</th><th>설명</th></tr></thead><tbody>
+<tr><td><b>펀딩 / 회비</b></td><td style="color:var(--ok)">+</td><td>유저 → 에스크로 입금(납부).</td></tr>
+<tr><td><b>지급</b></td><td style="color:var(--dang)">−</td><td>에스크로 → 총무 정산 지급.</td></tr>
+<tr><td><b>환급</b></td><td style="color:var(--dang)">−</td><td>에스크로 → 유저 환급(차액·취소).</td></tr>
+<tr><td><b>수수료</b></td><td style="color:var(--dang)">−</td><td>플랫폼 수수료 자동 차감(초기 0%).</td></tr>
+</tbody></table>
+<div class="callout">원장은 <b>append-only(불변)</b>로 설계해 감사 추적을 보장한다. 잔액은 항상 LedgerEntry 합으로 재계산 가능해야 한다(이중지급·정합성 검증).</div>
+<span class="pg-num">4</span></div><div class="page"><span class="pg-foot">데이터 모델</span><div class="doc-h">06 · Data Model</div><div class="doc-t">데이터 모델 · 엔티티</div><p class="doc-lead">22개 핵심 엔티티. 타입·관계는 초안이며 백엔드 스키마 확정 시 정규화/인덱스를 보강한다. 금액은 정수(원), 시간은 datetime.</p><div class="ent"><div class="ent-h"><h4>User (회원)</h4></div><p class="ent-d">플랫폼 가입 회원. KYC·지갑 보유.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>u1</td></tr><tr><td class="k">name</td><td class="ty">string</td><td>이건망</td></tr><tr><td class="k">phone</td><td class="ty">string</td><td>본인인증 매칭 키</td></tr><tr><td class="k">kycStatus</td><td class="ty">enum</td><td>미인증·대기·인증·보류</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>활성·정지</td></tr><tr><td class="k">joinedAt</td><td class="ty">datetime</td><td>2024.03.12</td></tr><tr><td class="k">walletBalance</td><td class="ty">int(원)</td><td>가상 장부 잔액 캐시</td></tr><tr><td class="k">lastActiveAt</td><td class="ty">datetime</td><td>—</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · 1—N Membership · 1—1 Wallet · 1—N CSTicket</div></div><div class="ent"><div class="ent-h"><h4>KycVerification (본인인증)</h4></div><p class="ent-d">본인인증 시도/결과. 가상 지갑 개설 전제.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>—</td></tr><tr><td class="k">userId</td><td class="ty">FK→User</td><td>u4</td></tr><tr><td class="k">method</td><td class="ty">enum</td><td>카카오·통신사·신분증</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>대기·인증·보류·실패</td></tr><tr><td class="k">attempts</td><td class="ty">int</td><td>5회 실패 시 30분 잠금</td></tr><tr><td class="k">verifiedAt</td><td class="ty">datetime</td><td>—</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · N—1 User</div></div><div class="ent"><div class="ent-h"><h4>Wallet (가상 장부 지갑)</h4></div><p class="ent-d">유저별 가상 장부. 모든 잔액은 에스크로 내 논리적 분개.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>—</td></tr><tr><td class="k">userId</td><td class="ty">FK→User</td><td>u1</td></tr><tr><td class="k">balance</td><td class="ty">int(원)</td><td>42,000</td></tr><tr><td class="k">updatedAt</td><td class="ty">datetime</td><td>장부 동기화 시각</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · 1—1 User · 1—N LedgerEntry</div></div><div class="ent"><div class="ent-h"><h4>Group (모임)</h4></div><p class="ent-d">동아리·소모임. 개설 시 심사 대상.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>g1</td></tr><tr><td class="k">name</td><td class="ty">string</td><td>디자인동아리 모디</td></tr><tr><td class="k">category</td><td class="ty">enum</td><td>디자인·풋살·러닝·스터디…</td></tr><tr><td class="k">leaderId</td><td class="ty">FK→User</td><td>총무</td></tr><tr><td class="k">memberCount</td><td class="ty">int</td><td>38</td></tr><tr><td class="k">gmv</td><td class="ty">int(원)</td><td>누적 거래액</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>심사·활성·정지</td></tr><tr><td class="k">risk</td><td class="ty">enum</td><td>정상·주의·검토·위험</td></tr><tr><td class="k">createdAt</td><td class="ty">datetime</td><td>2024.03.12</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · 1—N Membership · 1—N Campaign · 1—N Post</div></div><div class="ent"><div class="ent-h"><h4>Membership (가입)</h4></div><p class="ent-d">유저-모임 관계 + 역할.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">userId</td><td class="ty">FK→User</td><td>u1</td></tr><tr><td class="k">groupId</td><td class="ty">FK→Group</td><td>g1</td></tr><tr><td class="k">role</td><td class="ty">enum</td><td>부원·총무</td></tr><tr><td class="k">joinStatus</td><td class="ty">enum</td><td>신청·승인·반려</td></tr><tr><td class="k">application</td><td class="ty">json</td><td>폼빌더 가입 신청서 답변</td></tr><tr><td class="k">joinedAt</td><td class="ty">datetime</td><td>—</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · N—1 User · N—1 Group</div></div><div class="ent"><div class="ent-h"><h4>Campaign (회비·펀딩)</h4></div><p class="ent-d">모임의 모금 캠페인. 회비/펀딩 2종.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>c1</td></tr><tr><td class="k">groupId</td><td class="ty">FK→Group</td><td>g1</td></tr><tr><td class="k">title</td><td class="ty">string</td><td>봄 MT 펀딩</td></tr><tr><td class="k">type</td><td class="ty">enum</td><td>회비·펀딩</td></tr><tr><td class="k">targetAmount</td><td class="ty">int(원)</td><td>1,900,000</td></tr><tr><td class="k">raisedAmount</td><td class="ty">int(원)</td><td>집계값</td></tr><tr><td class="k">paidCount/totalCount</td><td class="ty">int</td><td>32 / 38</td></tr><tr><td class="k">deadline</td><td class="ty">date / D-day</td><td>D-2</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>검토·진행중·마감임박·정산대기·완료·정지</td></tr><tr><td class="k">budgetPlan</td><td class="ty">json</td><td>안심 예산안</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · N—1 Group · 1—N Contribution · 1—1 Settlement</div></div><span class="pg-num">5</span></div><div class="page"><span class="pg-foot">데이터 모델</span><div class="ent"><div class="ent-h"><h4>BudgetPlan (안심 예산안)</h4></div><p class="ent-d">캠페인 항목별 사용처 사전 공개. 신뢰 핵심 장치.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">campaignId</td><td class="ty">FK→Campaign</td><td>c1</td></tr><tr><td class="k">lineItems</td><td class="ty">json[]</td><td>[{항목,금액}] 식대·교통·장소…</td></tr><tr><td class="k">note</td><td class="ty">text</td><td>총무 설명</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · 1—1 Campaign</div></div><div class="ent"><div class="ent-h"><h4>Contribution (납부)</h4></div><p class="ent-d">유저의 캠페인 납부 1건. 카카오페이 이체 → Deposit 생성.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>—</td></tr><tr><td class="k">campaignId</td><td class="ty">FK→Campaign</td><td>c1</td></tr><tr><td class="k">userId</td><td class="ty">FK→User</td><td>u1</td></tr><tr><td class="k">amount</td><td class="ty">int(원)</td><td>51,900</td></tr><tr><td class="k">method</td><td class="ty">enum</td><td>카카오페이 이체</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>이체대기·확인대기·완료·실패</td></tr><tr><td class="k">depositId</td><td class="ty">FK→Deposit</td><td>대사 연결</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · N—1 Campaign · 1—1 Deposit</div></div><div class="ent"><div class="ent-h"><h4>Deposit / Reconcile (입금 대사)</h4></div><p class="ent-d">통합계좌 입금과 납부 대조. 은행/PG 미연동 → 카카오페이 내역 기반.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>D-3301</td></tr><tr><td class="k">userId</td><td class="ty">FK→User</td><td>u1</td></tr><tr><td class="k">campaignId</td><td class="ty">FK→Campaign</td><td>c1</td></tr><tr><td class="k">depositorRaw</td><td class="ty">string</td><td>이체 표기명(원본)</td></tr><tr><td class="k">expected</td><td class="ty">int(원)</td><td>51,900</td></tr><tr><td class="k">received</td><td class="ty">int(원)</td><td>51,900</td></tr><tr><td class="k">match</td><td class="ty">enum</td><td>auto·namemismatch·amount·missing·confirmed</td></tr><tr><td class="k">confirmedBy</td><td class="ty">FK→Admin</td><td>수동 확인자</td></tr><tr><td class="k">at</td><td class="ty">datetime</td><td>14:02</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · 1—1 Contribution → LedgerEntry</div></div><div class="ent"><div class="ent-h"><h4>LedgerEntry / Transaction (거래 원장)</h4></div><p class="ent-d">에스크로 통합계좌 기준 모든 분개. 감사 추적.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>T-90412</td></tr><tr><td class="k">groupId</td><td class="ty">FK→Group</td><td>g1</td></tr><tr><td class="k">type</td><td class="ty">enum</td><td>펀딩·회비·지급·수수료·환급</td></tr><tr><td class="k">amount</td><td class="ty">int(원)±</td><td>+51,900 / −2,010,000</td></tr><tr><td class="k">method</td><td class="ty">enum</td><td>계좌이체·카드·간편결제·정산이체·자동차감</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>완료·대기·실패</td></tr><tr><td class="k">party</td><td class="ty">string</td><td>이건망 / 김산(총무) / 모이쇼</td></tr><tr><td class="k">at</td><td class="ty">datetime</td><td>2026.02.14 14:22</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · N—1 Group · 감사 대상</div></div><div class="ent"><div class="ent-h"><h4>Settlement (정산)</h4></div><p class="ent-d">캠페인 마감 후 실지출 입력 → 차액·1인당 환급 계산.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>—</td></tr><tr><td class="k">campaignId</td><td class="ty">FK→Campaign</td><td>c1</td></tr><tr><td class="k">actualSpent</td><td class="ty">int(원)</td><td>실지출</td></tr><tr><td class="k">receipts</td><td class="ty">file[]</td><td>영수증/증빙</td></tr><tr><td class="k">difference</td><td class="ty">int(원)</td><td>모금−실지출</td></tr><tr><td class="k">refundPerHead</td><td class="ty">int(원)</td><td>인원 균등 분배</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>작성중·마감(승인대기)·완료</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · 1—1 Campaign → 1—N Payout</div></div><div class="ent"><div class="ent-h"><h4>Payout (지급 승인)</h4></div><p class="ent-d">총무 정산/출금 요청. 운영자 승인 후 이체 실행.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>P-220</td></tr><tr><td class="k">groupId</td><td class="ty">FK→Group</td><td>—</td></tr><tr><td class="k">title</td><td class="ty">string</td><td>지리산 종주 교통비 정산</td></tr><tr><td class="k">amount</td><td class="ty">int(원)</td><td>2,010,000</td></tr><tr><td class="k">requestedBy</td><td class="ty">FK→User</td><td>김산(총무)</td></tr><tr><td class="k">account</td><td class="ty">string</td><td>신한 110-***-204781</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>대기·승인·반려·실패</td></tr><tr><td class="k">requestedAt</td><td class="ty">datetime</td><td>—</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · N—1 Group · 승인 시 LedgerEntry(지급)</div></div><span class="pg-num">6</span></div><div class="page"><span class="pg-foot">데이터 모델</span><div class="ent"><div class="ent-h"><h4>EscrowAccount (통합 입금계좌)</h4></div><p class="ent-d">모이쇼 단일 보관계좌. 모든 잔액은 논리적 분개.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">balance</td><td class="ty">int(원)</td><td>8,420,000</td></tr><tr><td class="k">pendingPayout</td><td class="ty">int(원)</td><td>지급 대기 합계</td></tr><tr><td class="k">reconciled</td><td class="ty">int(원)</td><td>확인 완료 합계</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · 전 LedgerEntry 집계</div></div><div class="ent"><div class="ent-h"><h4>Post (쇼 피드)</h4></div><p class="ent-d">모임 활동 글/사진. 신고 시 모더레이션.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>s1</td></tr><tr><td class="k">groupId</td><td class="ty">FK→Group</td><td>g1</td></tr><tr><td class="k">authorId</td><td class="ty">FK→User</td><td>이건망</td></tr><tr><td class="k">type</td><td class="ty">enum</td><td>게시물·이벤트배너</td></tr><tr><td class="k">text</td><td class="ty">text</td><td>본문</td></tr><tr><td class="k">media</td><td class="ty">file[]</td><td>사진</td></tr><tr><td class="k">reports</td><td class="ty">int</td><td>신고 횟수</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>정상·신고·검토·예약·숨김</td></tr><tr><td class="k">createdAt</td><td class="ty">datetime</td><td>—</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · N—1 Group · 1—N Report</div></div><div class="ent"><div class="ent-h"><h4>Showts (숏폼 영상)</h4></div><p class="ent-d">세로 풀스크린 영상. 별도 검수 큐 통과 후 노출.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>ST-501</td></tr><tr><td class="k">authorId</td><td class="ty">FK→User</td><td>정성실</td></tr><tr><td class="k">groupId</td><td class="ty">FK→Group</td><td>—</td></tr><tr><td class="k">caption</td><td class="ty">string</td><td>새벽 한강 10km 완주 🏃</td></tr><tr><td class="k">duration</td><td class="ty">string</td><td>0:18</td></tr><tr><td class="k">videoUrl</td><td class="ty">string</td><td>—</td></tr><tr><td class="k">reports</td><td class="ty">int</td><td>0</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>검수대기·신고·승인·반려</td></tr><tr><td class="k">createdAt</td><td class="ty">datetime</td><td>—</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · N—1 Group · 검수 큐</div></div><div class="ent"><div class="ent-h"><h4>CSTicket (고객센터 문의)</h4></div><p class="ent-d">DM·노쇼·환불 문의 통합 처리. 거래/환불 연결.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>CS-1042</td></tr><tr><td class="k">userId</td><td class="ty">FK→User</td><td>이건망</td></tr><tr><td class="k">groupId</td><td class="ty">FK→Group</td><td>—</td></tr><tr><td class="k">category</td><td class="ty">enum</td><td>입금·환불지연·계정/KYC·정산·노쇼분쟁·기타</td></tr><tr><td class="k">channel</td><td class="ty">enum</td><td>문의하기·노쇼분쟁·DM</td></tr><tr><td class="k">priority</td><td class="ty">enum</td><td>높음·보통·낮음</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>미처리·처리중·완료</td></tr><tr><td class="k">linkedTxn</td><td class="ty">FK→LedgerEntry</td><td>T-90412</td></tr><tr><td class="k">messages</td><td class="ty">json[]</td><td>{from,at,text} 스레드</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · N—1 User · 거래/환불 연결</div></div><div class="ent"><div class="ent-h"><h4>Message / DM</h4></div><p class="ent-d">멤버 간 1:1 + 운영팀 문의 유입.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>—</td></tr><tr><td class="k">threadId</td><td class="ty">FK</td><td>—</td></tr><tr><td class="k">from</td><td class="ty">enum</td><td>user·admin·member</td></tr><tr><td class="k">text</td><td class="ty">text</td><td>—</td></tr><tr><td class="k">at</td><td class="ty">datetime</td><td>—</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · 운영팀 스레드 → CSTicket</div></div><span class="pg-num">7</span></div><div class="page"><span class="pg-foot">데이터 모델</span><div class="ent"><div class="ent-h"><h4>PushCampaign (푸시 발송)</h4></div><p class="ent-d">세그먼트 타겟 알림. 변수 치환 + 예약.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>—</td></tr><tr><td class="k">audience</td><td class="ty">enum</td><td>전체·미입금자·총무·휴면30일+</td></tr><tr><td class="k">title/text</td><td class="ty">string</td><td>{이름} 변수 치환</td></tr><tr><td class="k">preset</td><td class="ty">enum</td><td>독촉·마감임박·이벤트·점검안내</td></tr><tr><td class="k">scheduledAt</td><td class="ty">datetime</td><td>즉시·예약</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>예약·발송완료</td></tr><tr><td class="k">reach</td><td class="ty">int</td><td>8,420</td></tr><tr><td class="k">openRate</td><td class="ty">float(%)</td><td>62.4</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · → N Notification</div></div><div class="ent"><div class="ent-h"><h4>Notification (알림)</h4></div><p class="ent-d">유저 알림함. 시스템 자동 + 운영/총무 푸시.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>—</td></tr><tr><td class="k">userId</td><td class="ty">FK→User</td><td>—</td></tr><tr><td class="k">kind</td><td class="ty">enum</td><td>시스템·운영푸시·총무독촉</td></tr><tr><td class="k">deeplink</td><td class="ty">string</td><td>관련 화면</td></tr><tr><td class="k">readAt</td><td class="ty">datetime</td><td>읽음 처리</td></tr><tr><td class="k">createdAt</td><td class="ty">datetime</td><td>—</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · N—1 User</div></div><div class="ent"><div class="ent-h"><h4>NoShow / Penalty (노쇼)</h4></div><p class="ent-d">출석 체크 기반 벌금 차감. 이의제기 → CS.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>—</td></tr><tr><td class="k">eventId</td><td class="ty">FK</td><td>모임 일정</td></tr><tr><td class="k">userId</td><td class="ty">FK→User</td><td>—</td></tr><tr><td class="k">penalty</td><td class="ty">int(원)</td><td>10,000</td></tr><tr><td class="k">status</td><td class="ty">enum</td><td>부과·이의·취소</td></tr><tr><td class="k">checkedBy</td><td class="ty">FK→User</td><td>총무</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · 분쟁 시 → CSTicket</div></div><div class="ent"><div class="ent-h"><h4>FeePolicy / Setting (정책)</h4></div><p class="ent-d">수수료·알림 템플릿·권한. 감사 로그 기록.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">feeRate</td><td class="ty">float(%)</td><td>초기 0% (무료)</td></tr><tr><td class="k">notifyTemplates</td><td class="ty">json</td><td>보이스 프리셋</td></tr><tr><td class="k">roles</td><td class="ty">json</td><td>운영자 권한 분리</td></tr><tr><td class="k">updatedBy</td><td class="ty">FK→Admin</td><td>—</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · 전 모듈 적용</div></div><div class="ent"><div class="ent-h"><h4>AuditLog (감사 로그)</h4></div><p class="ent-d">민감 작업 이력. 핀테크 투명성 필수.</p>
+  <table><thead><tr><th style="width:30%">필드</th><th style="width:24%">타입</th><th>설명 / 예시</th></tr></thead><tbody>
+  <tr><td class="k">id</td><td class="ty">PK</td><td>—</td></tr><tr><td class="k">actorId</td><td class="ty">FK→Admin</td><td>—</td></tr><tr><td class="k">action</td><td class="ty">string</td><td>지급승인·정지·정책변경…</td></tr><tr><td class="k">target</td><td class="ty">string</td><td>대상 리소스</td></tr><tr><td class="k">meta</td><td class="ty">json</td><td>before/after</td></tr><tr><td class="k">at</td><td class="ty">datetime</td><td>—</td></tr>
+  </tbody></table><div class="rel"><b>관계</b> · 전 모듈 횡단</div></div><span class="pg-num">8</span></div><div class="page"><span class="pg-foot">상태 머신</span>
+<div class="doc-h">07 · State Machines</div><div class="doc-t">상태 머신</div>
+<p class="doc-lead">핵심 리소스의 상태 전이. 전이 이벤트는 AuditLog로 기록한다.</p>
+<div class="mac"><h4>Campaign (캠페인)</h4><div class="states"><span class="state">검토</span><span class="arr">→</span><span class="state">진행중</span><span class="arr">→</span><span class="state">마감임박</span><span class="arr">→</span><span class="state">정산대기</span><span class="arr">→</span><span class="state">완료</span><span class="arr">→</span><span class="state">정지</span></div><p class="mn">개설 심사 통과 → 진행중. 마감 D-3 이내 자동 마감임박. 100% 또는 마감 → 정산대기 → 정산 완료. 이상 시 정지(신규 납부 차단).</p></div><div class="mac"><h4>Deposit (입금 대사)</h4><div class="states"><span class="state">이체완료표시</span><span class="arr">→</span><span class="state">자동매칭</span><span class="arr">→</span><span class="state">수동대기</span><span class="arr">→</span><span class="state">확인완료</span><span class="arr">→</span><span class="state">미입금</span></div><p class="mn">유저 "이체 완료" → 카카오페이 내역 대조. 이름+금액 일치 = 자동매칭 → 장부 반영. 불일치(이름/금액)·미입금 = 수동대기 → 운영자 확인.</p></div><div class="mac"><h4>Payout (지급 승인)</h4><div class="states"><span class="state">대기</span><span class="arr">→</span><span class="state">승인</span><span class="arr">→</span><span class="state">반려</span><span class="arr">→</span><span class="state">실패</span><span class="arr">→</span><span class="state">완료</span></div><p class="mn">총무 요청(대기) → 운영자 승인 → 이체 실행(완료). 반려 시 사유 통보. 이체 실패 → 재처리(AD-05).</p></div><div class="mac"><h4>KYC (본인인증)</h4><div class="states"><span class="state">미인증</span><span class="arr">→</span><span class="state">대기</span><span class="arr">→</span><span class="state">인증</span><span class="arr">→</span><span class="state">보류</span><span class="arr">→</span><span class="state">실패</span></div><p class="mn">가입 직후 미인증 → 인증 시도. 통과=인증(지갑 개설). 미흡=보류. 5회 실패 시 30분 잠금.</p></div><div class="mac"><h4>Group (모임 심사)</h4><div class="states"><span class="state">심사</span><span class="arr">→</span><span class="state">활성</span><span class="arr">→</span><span class="state">정지</span></div><p class="mn">신규 개설 → 심사. 승인=활성, 반려/위반=정지. 정지 시 캠페인·거래 동결.</p></div><div class="mac"><h4>Post 모더레이션</h4><div class="states"><span class="state">정상</span><span class="arr">→</span><span class="state">신고</span><span class="arr">→</span><span class="state">검토</span><span class="arr">→</span><span class="state">숨김</span><span class="arr">→</span><span class="state">예약</span></div><p class="mn">신고 누적 → 검토 큐. 운영자 유지=정상, 숨김 → 작성자 통보. 배너는 예약.</p></div><div class="mac"><h4>Showts 검수</h4><div class="states"><span class="state">검수대기</span><span class="arr">→</span><span class="state">신고</span><span class="arr">→</span><span class="state">승인</span><span class="arr">→</span><span class="state">반려</span></div><p class="mn">업로드 → 검수대기. 승인 시 피드 노출. 반려 시 사유 통보. 신고 누적 별도 큐.</p></div><div class="mac"><h4>CSTicket (고객센터)</h4><div class="states"><span class="state">미처리</span><span class="arr">→</span><span class="state">처리중</span><span class="arr">→</span><span class="state">완료</span></div><p class="mn">문의 유입(미처리) → 첫 답장 시 처리중 자동 전환 → 해결 시 완료. 환불 재처리 연동.</p></div><div class="mac"><h4>PushCampaign (푸시)</h4><div class="states"><span class="state">작성</span><span class="arr">→</span><span class="state">예약</span><span class="arr">→</span><span class="state">발송완료</span></div><p class="mn">타겟·메시지 구성 → 즉시 발송완료 또는 예약. 발송 후 열람률 집계.</p></div>
+<span class="pg-num">9</span></div><div class="page"><span class="pg-foot">앱 기능 명세</span><div class="doc-h">08 · App Requirements</div><div class="doc-t">앱 기능 명세 · AP-01~12</div><p class="doc-lead">부원·총무가 사용하는 모바일 앱 12화면. 각 화면의 구성 요소·사용자 동작·백엔드 요구를 정의한다.</p><div class="scr"><div class="scr-h"><span class="scr-id">AP-01</span><h4>로그인 · 가입</h4><span class="scr-grp">온보딩</span></div>
+  <p class="scr-p">소셜 계정으로 3초 진입 → 본인인증(KYC) → 가상 지갑 개설.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>브랜드 로고/태그라인</li><li>카카오 로그인(주 CTA) → OAuth → 최초 1회 KYC</li><li>이메일 가입/로그인(보조)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>카카오/애플 → 인증 → (신규)KYC → 홈</li><li>이메일 → 이메일·비밀번호 폼</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>OAuth(카카오·애플) 토큰 교환·세션</li><li>KYC 연동(본인확인기관) — 5회 실패 시 30분 잠금</li><li>KYC 통과 시 Wallet 자동 개설</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id">AP-02</span><h4>탐색 · Discover</h4><span class="scr-grp">발견</span></div>
+  <p class="scr-p">관심사 태그로 동아리·플래시 모임 탐색.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>검색 바(모임명·키워드)</li><li>관심사 태그 필터(다중)</li><li>모임 카드(멤버수·주기)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>태그 → 리스트 필터</li><li>카드 → 클럽 상세</li><li>탭바로 홈/쇼/내정보</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Group 검색·필터 API(카테고리·키워드)</li><li>추천/정렬 랭킹(선택)</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id">AP-03</span><h4>클럽 상세 · 가입 신청</h4><span class="scr-grp">발견</span></div>
+  <p class="scr-p">소개 확인 + 총무 폼빌더 신청서 제출.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>커버·모임명</li><li>소개 본문(주기·성격)</li><li>가입 신청서 프리뷰(폼빌더)</li><li>가입 신청 CTA → 승인 대기열</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>가입 신청 → 신청서 작성 → 제출</li><li>총무 승인 후 푸시 수신</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>JoinApplication 생성 → 총무 승인 큐</li><li>폼빌더 스키마 저장/렌더</li><li>승인 시 Membership 생성 + Notification</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id">AP-04</span><h4>클럽 홈 · 룸</h4><span class="scr-grp">클럽</span></div>
+  <p class="scr-p">공지·일정·채팅 허브.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>공지 카드(고정)</li><li>일정/이벤트 → 참여 신청</li><li>채팅 미리보기</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>공지/일정/채팅 → 상세</li><li>＋ 버튼 → 펀딩·쇼 작성</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>공지/일정 CRUD</li><li>채팅 스레드</li><li>일정 참여 → NoShow 출석 연계</li></ul></div>
+  </div></div><span class="pg-num">10</span></div><div class="page"><span class="pg-foot">앱 기능 명세</span><div class="scr"><div class="scr-h"><span class="scr-id">AP-05</span><h4>펀딩 상세 · 안심 예산안</h4><span class="scr-grp">회비·펀딩</span></div>
+  <p class="scr-p">목표·달성 게이지 + 항목별 예산 공개로 납부 신뢰 형성. 핵심 화면.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>달성 게이지(실시간 모금액)</li><li>마감 D-day(임박 시 앰버/레드)</li><li>안심 예산안(항목별 사용처)</li><li>펀딩하기 CTA → 카카오페이 이체</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>펀딩하기 → 카카오페이 이체 → "확인 대기"</li><li>납부 후 알림·지갑 거래 기록</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Contribution 생성(확인대기)</li><li>카카오페이 이체 딥링크/리턴 처리</li><li>Deposit 대사 트리거 → AD-10</li><li>raisedAmount는 confirmed 기준 집계</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id">AP-06</span><h4>정산하기 → 완료</h4><span class="scr-grp">회비·펀딩</span></div>
+  <p class="scr-p">실지출 입력 → 차액 자동 계산 → 환급/추가징수. 총무용.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>실지출 입력(영수증 첨부)</li><li>차액 자동 계산(모금−실지출)</li><li>1인당 환급액(인원 균등)</li><li>정산 마감 CTA → 지급 승인 대기열</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>실지출 입력 → 차액 확인 → 마감</li><li>마감 시 관리자 승인 후 환급</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Settlement 계산 엔진</li><li>마감 시 Payout 생성 → AD-05 승인 큐</li><li>환급 분개(LedgerEntry 환급)</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id">AP-07</span><h4>쇼(Show) 피드</h4><span class="scr-grp">쇼·소셜</span></div>
+  <p class="scr-p">모임 활동 글·사진 소셜 피드.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>작성자/모임 헤더</li><li>본문·미디어</li><li>반응(좋아요·댓글·공유)·신고</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>좋아요/댓글/공유</li><li>신고 → 관리자 모더레이션 큐</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Post CRUD·피드 페이지네이션</li><li>Report 생성 → AD-06 큐</li><li>미디어 업로드/스토리지</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id">AP-08</span><h4>Showts · 숏폼 영상</h4><span class="scr-grp">쇼·소셜</span></div>
+  <p class="scr-p">세로 풀스크린 숏폼. 별도 검수 대상.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>영상·캡션 오버레이(자동재생)</li><li>우측 액션 레일(좋아요·댓글·공유·신고)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>상하 스와이프로 다음 영상</li><li>신고 → Showts 검수 큐</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>영상 인코딩/스트리밍·썸네일</li><li>승인된(status=승인) 영상만 노출</li><li>Report → AD-12 큐</li></ul></div>
+  </div></div><span class="pg-num">11</span></div><div class="page"><span class="pg-foot">앱 기능 명세</span><div class="scr"><div class="scr-h"><span class="scr-id">AP-09</span><h4>DM · 메시지</h4><span class="scr-grp">쇼·소셜</span></div>
+  <p class="scr-p">1:1 대화 + 운영팀 문의 유입.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>멤버 간 DM</li><li>운영팀 문의 → 고객센터(AD-09)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>대화방 → 메시지</li><li>운영팀 문의 → CS 티켓 생성</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Message 스레드·실시간(웹소켓)</li><li>운영팀 스레드 → CSTicket 생성</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id">AP-10</span><h4>내 지갑 · 마이페이지</h4><span class="scr-grp">지갑</span></div>
+  <p class="scr-p">가상 장부 잔액·거래 내역.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>지갑 잔액(가상 장부)</li><li>거래 내역(납부·환급·회비)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>거래 탭 → 상세/영수증</li><li>충전·출금(가상 장부)</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Wallet 잔액 = LedgerEntry 집계</li><li>관리자 장부와 동기화</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id">AP-11</span><h4>알림</h4><span class="scr-grp">지갑</span></div>
+  <p class="scr-p">독촉·입금완료·마감임박 알림함. 관리자 푸시 수신처.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>시스템 알림(입금/환급 자동)</li><li>운영/총무 푸시(AD-11·AP-12)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>알림 탭 → 딥링크</li><li>읽음 처리</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Notification 인박스·읽음 상태</li><li>푸시 토큰·딥링크 라우팅</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id">AP-12</span><h4>총무 대시보드(앱 내장)</h4><span class="scr-grp">총무</span></div>
+  <p class="scr-p">총무용 모임 회비 운영 도구. 본사 어드민과 의도적 분리.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>모임 KPI(모인 금액·미납 인원)</li><li>납부 현황 명단(멤버별 상태)</li><li>일괄 독촉 → 미입금자 푸시</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>멤버 행 → 개별 처리</li><li>독촉 → 미입금자 알림 발송</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>모임 단위 권한(총무 role)</li><li>독촉 → Notification 일괄 발송</li><li>본사 어드민 권한과 분리(스코프)</li></ul></div>
+  </div></div><span class="pg-num">12</span></div><div class="page"><span class="pg-foot">어드민 기능 명세</span><div class="doc-h">09 · Admin Requirements</div><div class="doc-t">어드민 기능 명세 · AD-01~12</div><p class="doc-lead">본사 운영팀이 사용하는 웹 어드민 12화면. <span class="tag">신규</span> = 고객센터·입금 확인·푸시 발송·Showts 검수.</p><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-01</span><h4>대시보드</h4><span class="scr-grp">코어</span></div>
+  <p class="scr-p">플랫폼 전체 거래액·모임·가입·정산 현황 한눈에.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>핵심 KPI(거래액·활성모임·신규가입·정산대기액 + 전월대비)</li><li>거래액 추이 차트(월별 GMV)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>KPI 클릭 → 상세</li><li>기간/세그먼트 필터</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>집계 배치/실시간 KPI</li><li>시계열 GMV 쿼리</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-02</span><h4>모임 관리</h4><span class="scr-grp">코어</span></div>
+  <p class="scr-p">전체 모임 심사·정지·조회. 행 → 상세 드로어.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>상태 필터(전체/활성/심사/정지)</li><li>모임 행 → 상세 드로어(멤버·장부·정책)</li><li>심사 상태(승인/반려)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>행 → 드로어</li><li>심사 승인/반려 · 정지/해제</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Group 심사 워크플로 + AuditLog</li><li>정지 시 캠페인/거래 처리 정책</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-03</span><h4>유저 관리</h4><span class="scr-grp">코어</span></div>
+  <p class="scr-p">회원 조회·KYC·지갑·정지.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>KYC/상태 필터</li><li>회원 행 → 상세(가입모임·거래·지갑)</li><li>KYC 대기 승인/반려</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>행 → 회원 상세</li><li>KYC 승인 · 계정 정지</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>KYC 승인 → kycStatus 갱신</li><li>정지 시 세션 무효화 + AuditLog</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-04</span><h4>회비·펀딩</h4><span class="scr-grp">코어</span></div>
+  <p class="scr-p">전체 캠페인 달성률 모니터링·이상 검토.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>진행 캠페인(달성률 게이지)</li><li>마감 임박(미달 위험)</li><li>정산 대기(100% → 인계)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>캠페인 → 상세·납부자</li><li>의심 캠페인 일시정지</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Campaign 상태 전이 모니터</li><li>정지 → 신규 Contribution 차단</li></ul></div>
+  </div></div><span class="pg-num">13</span></div><div class="page"><span class="pg-foot">어드민 기능 명세</span><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-05</span><h4>정산·장부</h4><span class="scr-grp">코어</span></div>
+  <p class="scr-p">에스크로 잔액·지급 승인·거래 원장 관리. 핵심 금융 화면.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>에스크로 잔액(통합 입금계좌)</li><li>지급 승인(총무 요청 승인/반려 → 실행)</li><li>거래 원장(전체 이력·감사)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>지급 승인/반려</li><li>원장 필터·CSV 내보내기</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Payout 승인 → 이체 실행 + LedgerEntry</li><li>원장 불변(append-only)·CSV export</li><li>실패 건 재처리 경로</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-06</span><h4>쇼 운영</h4><span class="scr-grp">콘텐츠</span></div>
+  <p class="scr-p">신고 게시물 모더레이션 + 이벤트 배너 운영.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>신고/예약 필터</li><li>신고 게시물(사유·횟수)</li><li>모더레이션(유지/숨김 → 통보)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>유지/숨김</li><li>이벤트 배너 발행·예약</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Post status 전이 + 작성자 Notification</li><li>배너 예약 스케줄러</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-07</span><h4>리포트</h4><span class="scr-grp">콘텐츠</span></div>
+  <p class="scr-p">운영 분석 차트 + 회계용 CSV/PDF.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>분석 차트(기간별 거래·카테고리 비중)</li><li>내보내기(월간 정산·거래 PDF/CSV)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>기간·세그먼트 선택</li><li>PDF/CSV 내보내기</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>집계 쿼리·리포트 생성</li><li>회계 인수인계용 export 포맷</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-08</span><h4>설정</h4><span class="scr-grp">콘텐츠</span></div>
+  <p class="scr-p">수수료·알림 템플릿·권한·감사 로그.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>정책 탭(수수료·템플릿·권한)</li><li>수수료 정책(초기 무료)</li><li>감사 로그(민감 작업)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>정책 값 수정·저장</li><li>권한 부여 · 감사 로그 조회</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>FeePolicy 버전 관리</li><li>RBAC 권한 모델</li><li>AuditLog 조회/필터</li></ul></div>
+  </div></div><span class="pg-num">14</span></div><div class="page"><span class="pg-foot">어드민 기능 명세</span><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-09</span><h4>고객센터</h4><span class="scr-grp new">신규</span></div>
+  <p class="scr-p">DM·노쇼·환불 문의 통합. 스레드 직접 답장·상태 변경.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>문의 리스트(채널·상태·미읽음)</li><li>대화 스레드(메시지 단위)</li><li>답장 말풍선(보이스 프리셋 매크로)</li><li>답장+상태(전송 시 미처리→처리중)·연결 거래/환불 바로가기</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>문의 → 스레드 → 답장</li><li>상태 변경 · 환불 재처리</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>CSTicket 상태 머신</li><li>거래/환불 연결(linkedTxn)</li><li>환불 재처리 → Payout/환급</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-10</span><h4>입금 확인</h4><span class="scr-grp new">신규</span></div>
+  <p class="scr-p">카카오페이 이체 내역 ↔ 회비·펀딩 입금 대조. 은행/PG 미연동.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>대사 KPI(확인대기·자동매칭률·에스크로)</li><li>자동 확인(이름·금액 일치 → 장부 반영)</li><li>수동 확인(이름불일치·금액불일치·미입금)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>카카오페이 내역 가져오기</li><li>수동 입금 확인 · 미입금 처리</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Deposit 자동매칭 규칙(name+amount)</li><li>수동 확인 → Contribution 완료 + LedgerEntry</li><li>미입금/금액불일치 예외 처리</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-11</span><h4>푸시 발송</h4><span class="scr-grp new">신규</span></div>
+  <p class="scr-p">세그먼트 타겟 푸시 + 실시간 미리보기·이력.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>타겟 선택(전체·미입금자·총무·휴면)</li><li>메시지 작성(프리셋 + {이름} 변수)</li><li>실시간 폰 미리보기</li><li>발송/예약(이력·열람률)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>타겟·메시지 → 발송/예약</li><li>발송 이력·열람률 조회</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>세그먼트 쿼리·변수 치환</li><li>발송 큐·예약 스케줄러</li><li>열람률 트래킹</li></ul></div>
+  </div></div><div class="scr"><div class="scr-h"><span class="scr-id ad">AD-12</span><h4>Showts 검수</h4><span class="scr-grp new">신규</span></div>
+  <p class="scr-p">숏폼 영상 전용 검수 큐. 승인된 영상만 노출.</p>
+  <div class="scr-cols three">
+    <div><p class="scr-lab">구성 요소</p><ul class="tight"><li>검수 상태 필터(검수대기·신고·승인)</li><li>영상 썸네일 카드(신고 배지·미리보기)</li><li>승인/반려(반려 시 사유 통보)</li></ul></div>
+    <div><p class="scr-lab">사용자 동작</p><ul class="tight act"><li>썸네일 → 영상 검토</li><li>승인/반려 처리</li></ul></div>
+    <div><p class="scr-lab">백엔드 요구</p><ul class="tight be"><li>Showts status 전이</li><li>승인 시 피드 노출 플래그</li><li>반려 사유 → 작성자 Notification</li></ul></div>
+  </div></div><span class="pg-num">15</span></div><div class="page"><span class="pg-foot">연결 맵</span>
+<div class="doc-h">10 · App ↔ Admin</div><div class="doc-t">앱 ↔ 어드민 연결 맵</div>
+<p class="doc-lead">앱의 사용자 행위가 어드민 운영 큐로 흘러가고, 어드민의 처리가 다시 앱 알림/장부로 돌아온다. 백엔드 이벤트/큐 설계의 기준.</p>
+<div class="conn"><div class="conn-a">AP-05 펀딩 납부</div><div class="conn-x">→</div><div class="conn-b">AD-10 입금 확인</div><div class="conn-note">카카오페이 이체 → 대사</div></div><div class="conn"><div class="conn-a">AP-06 정산 마감</div><div class="conn-x">→</div><div class="conn-b">AD-05 지급 승인</div><div class="conn-note">Payout 생성 → 승인 → 환급</div></div><div class="conn"><div class="conn-a">AP-07 쇼 신고</div><div class="conn-x">→</div><div class="conn-b">AD-06 쇼 운영</div><div class="conn-note">Report → 모더레이션 큐</div></div><div class="conn"><div class="conn-a">AP-08 Showts 신고</div><div class="conn-x">→</div><div class="conn-b">AD-12 Showts 검수</div><div class="conn-note">Report → 검수 큐</div></div><div class="conn"><div class="conn-a">AP-09 운영팀 DM</div><div class="conn-x">→</div><div class="conn-b">AD-09 고객센터</div><div class="conn-note">문의 → CSTicket</div></div><div class="conn"><div class="conn-a">AD-11 푸시 발송</div><div class="conn-x">→</div><div class="conn-b">AP-11 알림</div><div class="conn-note">세그먼트 → Notification</div></div><div class="conn"><div class="conn-a">AP-12 총무 독촉</div><div class="conn-x">→</div><div class="conn-b">AP-11 알림</div><div class="conn-note">미입금자 → 푸시</div></div><div class="conn"><div class="conn-a">AP-10 지갑 ↔ AD-05 장부</div><div class="conn-x">→</div><div class="conn-b">양방향</div><div class="conn-note">LedgerEntry 동기화</div></div>
+<div class="callout">대부분의 연결은 <b>비동기 이벤트 + 운영 큐</b> 패턴이다(납부→대사 큐, 신고→모더레이션 큐, 정산→승인 큐). 멱등성·재시도·실패 큐(DLQ)를 전제로 설계한다.</div>
+<span class="pg-num">16</span></div><div class="page"><span class="pg-foot">알림 · 비기능</span>
+<div class="doc-h">11 · Notifications & Non-Functional</div><div class="doc-t">알림 · 보이스 · 비기능 요구</div>
+<h3 class="sub">알림 종류 (Notification.kind)</h3>
+<table><thead><tr><th style="width:24%">종류</th><th>트리거</th></tr></thead><tbody>
+<tr><td><b>시스템 알림</b></td><td>입금/환급 완료, 정산 마감, KYC 결과 등 자동 트리거.</td></tr>
+<tr><td><b>운영 푸시</b></td><td>AD-11 세그먼트 발송(이벤트·점검 안내 등). {이름} 변수 치환.</td></tr>
+<tr><td><b>총무 독촉</b></td><td>AP-12 일괄 독촉 → 미입금자 대상 푸시.</td></tr>
+</tbody></table>
+<h3 class="sub">보이스 프리셋 (카피 톤)</h3>
+<table><thead><tr><th style="width:22%">상황</th><th>모이쇼 보이스</th></tr></thead><tbody>
+<tr><td><b>미입금 독촉</b></td><td>"{이름}님! 총무님이 목 빠지게 기다리고 있어요 🥹 3초 만에 펀딩을 완료해 볼까요?"</td></tr>
+<tr><td><b>마감 임박</b></td><td>"정산까지 D-2! 슬슬 마무리해 볼까요?"</td></tr>
+<tr><td><b>입금 완료</b></td><td>"펀딩 완료! 🎉 5,000원이 안전하게 도착했어요."</td></tr>
+<tr><td><b>점검 안내</b></td><td>"은행 점검으로 입금 처리가 잠시 지연되고 있어요. 점검 후 자동 반영될 예정이에요."</td></tr>
+</tbody></table>
+<p class="note">규칙 · 존댓말·권유형, 메시지당 이모지 1개, 금액은 천단위 콤마+"원", 날짜 <code>2026.02.14</code>, 마감 <code>D-2</code>.</p>
+<h3 class="sub">비기능 요구</h3>
+<ul class="tight">
+<li><b>보안/KYC</b> · 본인인증 통과 후 지갑 개설. 5회 실패 시 30분 잠금. 정지 시 세션 무효화.</li>
+<li><b>감사/투명성</b> · 지급 승인·정지·정책 변경 등 민감 작업은 AuditLog(before/after) 필수.</li>
+<li><b>정합성</b> · 원장 append-only, 잔액=분개 합 재계산 가능. 이중지급 방지(멱등 키).</li>
+<li><b>수수료 정책</b> · 초기 0%. FeePolicy 버전 관리로 추후 변경 가능.</li>
+<li><b>권한(RBAC)</b> · 총무(모임 스코프) ↔ 운영자(플랫폼 스코프) 분리.</li>
+<li><b>회계 인수인계</b> · AD-07 월간 정산/거래 CSV·PDF export.</li>
+<li><b>접근성/모션</b> · prefers-reduced-motion 존중. tabular 숫자.</li>
+</ul>
+<span class="pg-num">17</span></div><div class="page"><span class="pg-foot">API 표면 초안</span>
+<div class="doc-h">12 · API Surface (Draft)</div><div class="doc-t">API 표면 초안</div>
+<p class="doc-lead">화면·엔티티에서 유도한 리소스 중심 엔드포인트 제안. 실제 설계 시 인증 스코프·페이지네이션·웹훅(카카오페이)·이벤트 토픽을 확정한다.</p>
+<h3 class="sub">인증·유저</h3><div class="api"><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/auth/oauth/{provider}</b> <span style="color:var(--mut)">— 소셜 로그인(카카오·애플)</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/auth/kyc</b> <span style="color:var(--mut)">— 본인인증 시작/검증</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/me</b> <span style="color:var(--mut)">— 내 프로필·지갑</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/me/wallet</b> <span style="color:var(--mut)">— 잔액·거래 내역</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/me/notifications</b> <span style="color:var(--mut)">— 알림함</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m patch">PATCH</span><b style="color:var(--ink)">/me/notifications/{id}</b> <span style="color:var(--mut)">— 읽음 처리</span></div></div><h3 class="sub">모임·가입</h3><div class="api"><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/groups</b> <span style="color:var(--mut)">— 탐색·검색·필터</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/groups/{id}</b> <span style="color:var(--mut)">— 클럽 상세</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/groups/{id}/applications</b> <span style="color:var(--mut)">— 가입 신청(폼)</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/groups/{id}/feed</b> <span style="color:var(--mut)">— 클럽 홈(공지·일정·채팅)</span></div></div><h3 class="sub">캠페인·납부</h3><div class="api"><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/groups/{id}/campaigns</b> <span style="color:var(--mut)">— 캠페인 목록</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/campaigns</b> <span style="color:var(--mut)">— 캠페인 개설(총무)</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/campaigns/{id}</b> <span style="color:var(--mut)">— 펀딩 상세·예산안</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/campaigns/{id}/contributions</b> <span style="color:var(--mut)">— 납부(카카오페이 이체)</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/campaigns/{id}/settlement</b> <span style="color:var(--mut)">— 정산 마감(총무)</span></div></div><h3 class="sub">쇼·소셜</h3><div class="api"><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/feed/posts</b> <span style="color:var(--mut)">— 쇼 피드</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/posts</b> <span style="color:var(--mut)">— 글 작성</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/posts/{id}/report</b> <span style="color:var(--mut)">— 신고</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/showts</b> <span style="color:var(--mut)">— 숏폼 피드(승인분만)</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/dm/threads/{id}/messages</b> <span style="color:var(--mut)">— DM 전송</span></div></div><h3 class="sub">어드민 — 코어</h3><div class="api"><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/admin/dashboard</b> <span style="color:var(--mut)">— KPI·차트</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m patch">PATCH</span><b style="color:var(--ink)">/admin/groups/{id}</b> <span style="color:var(--mut)">— 심사/정지</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m patch">PATCH</span><b style="color:var(--ink)">/admin/users/{id}/kyc</b> <span style="color:var(--mut)">— KYC 승인</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/admin/campaigns</b> <span style="color:var(--mut)">— 캠페인 모니터</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/admin/ledger</b> <span style="color:var(--mut)">— 거래 원장·CSV</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/admin/payouts/{id}/approve</b> <span style="color:var(--mut)">— 지급 승인</span></div></div><h3 class="sub">어드민 — 신규</h3><div class="api"><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/admin/deposits</b> <span style="color:var(--mut)">— 입금 대사 큐</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/admin/deposits/{id}/confirm</b> <span style="color:var(--mut)">— 수동 입금 확인</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m get">GET</span><b style="color:var(--ink)">/admin/tickets</b> <span style="color:var(--mut)">— 고객센터 문의</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/admin/tickets/{id}/reply</b> <span style="color:var(--mut)">— 답장·상태 변경</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m post">POST</span><b style="color:var(--ink)">/admin/push</b> <span style="color:var(--mut)">— 푸시 발송/예약</span></div><div style="padding:3px 0;border-bottom:1px solid var(--line2)"><span class="m patch">PATCH</span><b style="color:var(--ink)">/admin/showts/{id}</b> <span style="color:var(--mut)">— 검수 승인/반려</span></div></div>
+<div class="callout" style="margin-top:18px">⚠ <b>외부 연동 미정</b> · 카카오페이 이체 확인은 초기 수동 대사 → 추후 웹훅/오픈뱅킹 연동 시 AD-10 자동매칭률을 끌어올린다. 본 PRD는 그 전환을 전제로 Deposit·LedgerEntry를 분리 설계했다.</div>
+<span class="pg-num">18</span></div></body></html>

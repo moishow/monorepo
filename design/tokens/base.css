@@ -1,0 +1,46 @@
+/* ============================================================
+   모이쇼 — Base / reset primitives
+   Light, opinionated reset that wires brand defaults.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font: var(--text-body-1);
+  font-family: var(--font-sans);
+  color: var(--text-body);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* tabular numerals everywhere money/counts appear by default */
+.tnum, [data-numeric] {
+  font-feature-settings: var(--font-feature-numeric);
+}
+
+h1, h2, h3, h4, p { margin: 0; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+a { color: var(--text-link); text-decoration: none; }
+
+/* selection in brand blue */
+::selection { background: var(--moisho-blue-200); color: var(--gray-900); }
+
+/* reduced-motion friendliness */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>모이쇼 — 포인트 에스크로 정산 모델 설계서</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet"><style>
+:root{--ink:#1f2430;--mut:#5b6170;--faint:#969cab;--line:#e2e4e9;--line2:#eef0f3;--paper:#ece9e1;--white:#fff;--ac:#3b5cff;--acsoft:#eef1ff;--pp:#7c5cff;--ppsoft:#f1ecff;--ok:#1f9d57;--oksoft:#e7f6ee;--warn:#c47f00;--warnsoft:#fdf3e2;--dang:#e5484d;--dangsoft:#fdecec;}
+*{box-sizing:border-box;}html,body{margin:0;}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;font-size:13px;}
+.page{width:816px;margin:28px auto;background:var(--white);box-shadow:0 2px 14px rgba(0,0,0,.09);border-radius:3px;padding:54px 50px;position:relative;}
+.pg-foot{position:absolute;bottom:22px;left:50px;font-size:11px;color:var(--faint);}
+.pg-num{position:absolute;bottom:22px;right:50px;font-size:11px;color:var(--faint);}
+.cover{display:flex;flex-direction:column;min-height:944px;}
+.cover .tagline{font-size:13px;letter-spacing:.18em;color:var(--ac);font-weight:600;text-transform:uppercase;}
+.cover h1{font-size:43px;line-height:1.1;margin:14px 0 0;letter-spacing:-.025em;font-weight:700;}
+.cover .sub{font-size:17px;color:var(--mut);margin-top:16px;max-width:600px;}
+.cover .rule{height:3px;width:64px;background:var(--ink);margin:24px 0;}
+.cover .pill{display:inline-flex;gap:7px;align-items:center;font-size:12px;font-weight:600;color:var(--pp);background:var(--ppsoft);border-radius:99px;padding:5px 13px;width:fit-content;}
+.cover .meta{margin-top:auto;display:grid;grid-template-columns:repeat(2,1fr);gap:14px 30px;border-top:1px solid var(--line);padding-top:22px;}
+.cover .meta b{display:block;font-size:11px;letter-spacing:.04em;color:var(--faint);text-transform:uppercase;margin-bottom:3px;}
+.cover .meta span{font-size:14px;font-weight:600;}
+.doc-h{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ac);font-weight:700;margin:0 0 4px;}
+.doc-t{font-size:24px;font-weight:700;margin:0 0 7px;letter-spacing:-.01em;}
+.doc-lead{font-size:13px;color:var(--mut);margin:0 0 18px;max-width:660px;}
+h2.sec{font-size:16px;font-weight:700;margin:24px 0 8px;padding-bottom:5px;border-bottom:2px solid var(--ink);}
+table{width:100%;border-collapse:collapse;font-size:11.5px;margin:6px 0;}
+th{background:var(--line2);color:var(--faint);font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:6px 9px;font-weight:700;}
+td{padding:6px 9px;border-bottom:1px solid var(--line2);color:var(--mut);vertical-align:top;}
+td b{color:var(--ink);}
+td.k{font-family:"IBM Plex Mono",monospace;color:var(--ac);font-weight:600;white-space:nowrap;}
+td.sign{font-family:"IBM Plex Mono",monospace;font-weight:700;text-align:center;width:36px;}
+/* flow phases */
+.flowmap{display:flex;align-items:stretch;gap:0;margin:14px 0 6px;flex-wrap:wrap;}
+.fp{flex:1;min-width:118px;border:1.5px solid var(--ink);border-radius:9px;padding:10px 11px;background:#fff;position:relative;}
+.fp .ph{font-family:"IBM Plex Mono",monospace;font-size:9px;font-weight:700;letter-spacing:.05em;}
+.fp .num{position:absolute;top:-9px;left:10px;width:18px;height:18px;border-radius:50%;background:var(--ink);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.fp h4{margin:6px 0 4px;font-size:12.5px;font-weight:700;line-height:1.25;}
+.fp .lk{font-size:9.5px;color:var(--mut);font-weight:600;}
+.fp-arrow{display:flex;align-items:center;color:var(--faint);font-weight:700;font-size:15px;padding:0 3px;}
+/* phase detail */
+.pd{border:1px solid var(--line);border-radius:9px;padding:13px 15px;margin-bottom:11px;break-inside:avoid;}
+.pd-h{display:flex;align-items:center;gap:9px;margin-bottom:6px;flex-wrap:wrap;}
+.pd-n{width:22px;height:22px;border-radius:6px;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.pd-h h4{margin:0;font-size:14.5px;font-weight:700;}
+.pd-ph{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:700;background:var(--line2);color:var(--mut);border-radius:4px;padding:2px 7px;margin-left:auto;}
+.pd-d{font-size:12px;color:var(--mut);margin:0 0 8px;}
+ul.tight{margin:0;padding:0;list-style:none;}
+ul.tight li{font-size:11.5px;color:var(--ink);padding:3px 0 3px 15px;position:relative;line-height:1.4;}
+ul.tight li::before{content:"▸";position:absolute;left:2px;color:var(--ac);font-weight:700;}
+.mac{border:1px solid var(--line);border-radius:9px;padding:11px 14px;margin-bottom:10px;break-inside:avoid;}
+.mac h4{margin:0 0 8px;font-size:13px;}
+.states{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:7px;}
+.state{font-size:10.5px;font-weight:600;border:1.5px solid var(--ink);border-radius:7px;padding:4px 9px;background:#fff;}
+.arr{color:var(--faint);font-weight:700;}
+.mac .mn{font-size:11px;color:var(--mut);line-height:1.45;}
+.callout{border:1px solid var(--line);border-left:4px solid var(--pp);background:var(--ppsoft);border-radius:8px;padding:11px 14px;font-size:12px;margin:12px 0;}
+.callout b{color:var(--pp);}
+.callout.warn{border-left-color:var(--warn);background:var(--warnsoft);}.callout.warn b{color:var(--warn);}
+.callout.ok{border-left-color:var(--ok);background:var(--oksoft);}.callout.ok b{color:var(--ok);}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2);font-size:12px;}
+.kv b{color:var(--ink);}
+.api .m{display:inline-block;font-family:"IBM Plex Mono",monospace;font-weight:700;width:46px;font-size:10px;}
+.api .post{color:var(--ac);}.api .get{color:var(--ok);}.api .del{color:var(--dang);}
+.api-row{padding:4px 0;border-bottom:1px solid var(--line2);font-family:"IBM Plex Mono",monospace;font-size:10.5px;}
+.api-row .d{font-family:"IBM Plex Sans KR";color:var(--mut);}
+@media print{body{background:none;}.page{width:auto;margin:0;box-shadow:none;border-radius:0;padding:0;}.pg-foot,.pg-num{display:none;}.page+.page{break-before:page;}.pd,.mac,tr,.kv{break-inside:avoid;}*{print-color-adjust:exact;-webkit-print-color-adjust:exact;}}
+@page{margin:0.62in;}
+</style></head><body><div class="page"><span class="pg-foot">표지</span><div class="cover">
+<div class="tagline">Escrow Settlement Model</div>
+<h1>모이쇼<br>포인트 에스크로<br>정산 모델 설계서</h1>
+<div class="sub">사생활 보호 · 먹튀 방지 · 이탈 방지를 동시에 달성하는 <b>기간 제한형 에스크로</b> 흐름. 예치 → 락 → 출금 → 증빙·반납 → 자동 정산·현금화의 5단계를 데이터·상태·원장·권한·정책으로 정의한다.</div>
+<div class="rule"></div>
+<div class="pill">⚙ 5단계 플로우 · 9 원장타입 · 신용패널티 · OCR · 동시성 · 법적전략</div>
+<div class="meta">
+<div><b>결제</b><span>앱 포인트(카카오페이 충전) · 수수료 0원</span></div>
+<div><b>단위</b><span>차수(Round) 단위 예치·정산</span></div>
+<div><b>수익</b><span>인앱 광고(AdMob) — 결제선 분리</span></div>
+<div><b>일자</b><span>2026.06.22</span></div>
+</div></div><span class="pg-num">1</span></div><div class="page"><span class="pg-foot">핵심 플로우</span>
+<div class="doc-h">1 · Core Flow</div><div class="doc-t">기간 제한형 에스크로 흐름</div>
+<p class="doc-lead">자금은 항상 에스크로(앱 포인트)에 묶인다. <b>만남 시각</b>을 기준으로 부원의 취소권이 닫히고 총무의 출금권이 열리는 것이 이 모델의 핵심 장치다.</p>
+<div class="flowmap">
+<div class="fp"><span class="num">1</span><span class="ph" style="color:var(--ac)">OPEN</span><h4>모집 · 예치</h4><span class="lk">🔒 취소 가능 · 출금 잠김</span></div><div class="fp-arrow">→</div><div class="fp"><span class="num">2</span><span class="ph" style="color:var(--warn)">LOCKED</span><h4>만남 시간 마감 (락)</h4><span class="lk">🔒 취소 차단 · 총무 출금 활성</span></div><div class="fp-arrow">→</div><div class="fp"><span class="num">3</span><span class="ph" style="color:var(--pp)">WITHDRAWN</span><h4>총무 출금 · 지출</h4><span class="lk">🔒 정산 타이머 작동</span></div><div class="fp-arrow">→</div><div class="fp"><span class="num">4</span><span class="ph" style="color:var(--ok)">SETTLING</span><h4>증빙 · 잔액 반납</h4><span class="lk">🔒 OCR 강제 매핑 · 패널티</span></div><div class="fp-arrow">→</div><div class="fp"><span class="num">5</span><span class="ph" style="color:var(--ac)">DONE</span><h4>자동 정산 · 현금화</h4><span class="lk">🔒 균등 정산 · 즉시 출금</span></div>
+</div>
+<h2 class="sec">단계별 상세</h2>
+<div class="pd"><div class="pd-h"><span class="pd-n" style="background:var(--ac)">1</span><h4>모집 · 예치</h4><span class="pd-ph">OPEN</span></div>
+<p class="pd-d">부원이 모임 차수별 예상 금액을 앱 포인트로 예치. 만남 시간 전까지 자유 취소 → 즉시 본인 지갑 환불. 총무 출금 불가.</p>
+<ul class="tight"><li>부원: 차수 선택 → 포인트 예치(부족분 카카오페이 충전)</li><li>부원: 취소 → 예치 포인트 즉시 환불</li><li>총무: 출금 권한 ❌ (잠김)</li></ul></div><div class="pd"><div class="pd-h"><span class="pd-n" style="background:var(--warn)">2</span><h4>만남 시간 마감 (락)</h4><span class="pd-ph">LOCKED</span></div>
+<p class="pd-d">약속 시간 도달 순간 부원 취소 자동 차단. 동시에 총무에게만 해당 모임 자금 출금(현금화) 권한 활성화.</p>
+<ul class="tight"><li>시스템: 마감 시각 도달 → 취소 API 차단</li><li>시스템: 총무 출금 권한 활성화</li><li>동시성 격리: 마감 직전 취소/출금 요청 순차 처리</li></ul></div><div class="pd"><div class="pd-h"><span class="pd-n" style="background:var(--pp)">3</span><h4>총무 출금 · 지출</h4><span class="pd-ph">WITHDRAWN</span></div>
+<p class="pd-d">총무가 모인 자금을 실제 본인 계좌로 인출해 오프라인 비용으로 사용. 동시에 정산 데드라인 타이머 작동.</p>
+<ul class="tight"><li>총무: 모임 자금 → 본인 계좌 출금(현금화)</li><li>시스템: 정산 데드라인 타이머 시작(예: 12h)</li><li>광고: 출금 처리 대기(3~5초) 화면 노출</li></ul></div><div class="pd"><div class="pd-h"><span class="pd-n" style="background:var(--ok)">4</span><h4>증빙 · 잔액 반납</h4><span class="pd-ph">SETTLING</span></div>
+<p class="pd-d">모임 종료 후 총무가 영수증 사진 + 실제 지출액 입력, 출금액−지출액 = 남은 잔액 포인트를 시스템에 즉시 반납. 지연 시 패널티.</p>
+<ul class="tight"><li>총무: 영수증 업로드 → OCR 자동 추출(금액·가게·일시)</li><li>총무: 잔액 포인트 시스템 반납</li><li>시스템: 데드라인 초과 시 신용등급 차감</li></ul></div><div class="pd"><div class="pd-h"><span class="pd-n" style="background:var(--ac)">5</span><h4>자동 정산 · 현금화</h4><span class="pd-ph">DONE</span></div>
+<p class="pd-d">시스템이 반납금 ÷ 참여인원 계산해 부원에게 공평 환급. 부원은 포인트를 원할 때 즉시 본인 계좌로 현금화.</p>
+<ul class="tight"><li>시스템: 반납금 / 참여인원 → 1인당 환급</li><li>부원: 환급 포인트 → 즉시 계좌 현금화(출금)</li><li>광고: 정산 피드 확인 화면 노출</li></ul></div>
+<span class="pg-num">2</span></div><div class="page"><span class="pg-foot">상태 머신</span>
+<div class="doc-h">2 · State Machines</div><div class="doc-t">상태 전이</div>
+<p class="doc-lead">만남 시각(LOCK)과 정산 데드라인(타이머)이 상태 전이의 두 트리거다. 모든 전이는 AuditLog + 원장 분개로 기록된다.</p>
+<div class="mac"><h4>Meeting / Round Escrow (자금 락 사이클)</h4><div class="states"><span class="state">OPEN</span><span class="arr">→</span><span class="state">LOCKED</span><span class="arr">→</span><span class="state">WITHDRAWN</span><span class="arr">→</span><span class="state">SETTLING</span><span class="arr">→</span><span class="state">DONE</span></div><p class="mn">OPEN(예치·취소 자유, 출금 잠김) → 만남시각 도달 → LOCKED(취소 차단, 출금 활성) → 총무 출금 → WITHDRAWN(정산 타이머) → 영수증·잔액 반납 → SETTLING → 자동 균등 정산 → DONE.</p></div><div class="mac"><h4>Deposit (부원 예치)</h4><div class="states"><span class="state">deposited</span><span class="arr">→</span><span class="state">refunded(취소)</span><span class="arr">→</span><span class="state">locked</span><span class="arr">→</span><span class="state">settled-refund</span></div><p class="mn">예치 → (마감 전) 취소 시 refunded → (마감 후) locked → 정산 후 남은 분 settled-refund로 지갑 환급.</p></div><div class="mac"><h4>TreasurerPayout (총무 출금)</h4><div class="states"><span class="state">blocked</span><span class="arr">→</span><span class="state">enabled</span><span class="arr">→</span><span class="state">withdrawn</span><span class="arr">→</span><span class="state">overdue</span><span class="arr">→</span><span class="state">penalized</span></div><p class="mn">마감 전 blocked → 마감 후 enabled → 출금 withdrawn(타이머 시작) → 데드라인 초과 overdue → 미반납 지속 시 penalized.</p></div><div class="mac"><h4>Settlement (증빙·반납)</h4><div class="states"><span class="state">pending</span><span class="arr">→</span><span class="state">receipt-verified</span><span class="arr">→</span><span class="state">returned</span><span class="arr">→</span><span class="state">auto-settled</span></div><p class="mn">pending → 영수증 OCR 검증 receipt-verified → 잔액 반납 returned → 시스템 균등 분배 auto-settled.</p></div>
+<div class="callout warn">⏱ <b>두 개의 시계</b> · ① <b>만남 시각</b> 도달 → OPEN→LOCKED(취소 차단·출금 활성). ② <b>정산 데드라인 타이머</b>(총무 출금 시점부터, 예 12h) 초과 → 신용등급 패널티. 둘 다 서버 스케줄러가 트리거.</div>
+<span class="pg-num">3</span></div><div class="page"><span class="pg-foot">포인트 원장</span>
+<div class="doc-h">3 · Point Ledger</div><div class="doc-t">포인트 원장 모델</div>
+<p class="doc-lead">모든 포인트 이동은 append-only 원장(LedgerEntry)으로 분개된다. 회원 간 임의 송금은 존재하지 않으며, 흐름은 <b>충전 → 예치 → (환불/락) → 총무출금 → 반납 → 정산환급 → 현금화</b>로 고정된다.</p>
+<table><thead><tr><th style="width:30%">type</th><th class="sign">부호</th><th>설명</th></tr></thead><tbody>
+<tr><td class="k">CHARGE</td><td class="sign" style="color:var(--ok)">+</td><td>카카오페이로 포인트 충전(부족분). 수수료 0원</td></tr><tr><td class="k">DEPOSIT</td><td class="sign" style="color:var(--dang)">−</td><td>부원 지갑 → 모임 에스크로 예치(차수 단위)</td></tr><tr><td class="k">REFUND_CANCEL</td><td class="sign" style="color:var(--ok)">+</td><td>마감 전 취소 → 예치 포인트 즉시 환불</td></tr><tr><td class="k">LOCK</td><td class="sign" style="color:var(--faint)">=</td><td>마감 시 예치금 락(이동 없음, 상태 전이만)</td></tr><tr><td class="k">PAYOUT_TREASURER</td><td class="sign" style="color:var(--dang)">−</td><td>에스크로 → 총무 계좌 출금(현금화)</td></tr><tr><td class="k">RETURN</td><td class="sign" style="color:var(--ok)">+</td><td>총무가 미사용 잔액 포인트 시스템 반납</td></tr><tr><td class="k">SETTLE_REFUND</td><td class="sign" style="color:var(--ok)">+</td><td>반납금 ÷ 참여인원 → 부원 지갑 균등 환급</td></tr><tr><td class="k">CASHOUT</td><td class="sign" style="color:var(--dang)">−</td><td>부원 지갑 포인트 → 본인 계좌 현금화</td></tr><tr><td class="k">PENALTY</td><td class="sign" style="color:var(--faint)">=</td><td>반납 지연 시 신용등급 차감(금액 이동 없음, 점수 기록)</td></tr>
+</tbody></table>
+<div class="callout ok">✅ <b>정합성 불변식</b> · 모임 에스크로 잔액 = Σ DEPOSIT − Σ PAYOUT_TREASURER + Σ RETURN − Σ SETTLE_REFUND. 정산 완료(DONE) 시 에스크로 잔액 = 0, 시스템 발행 포인트 최소화.</div>
+<h2 class="sec">지갑 · 계좌</h2>
+<div class="kv"><b>Wallet (부원)</b><span>포인트 잔액 + 거래내역. 충전(카카오페이)·현금화(계좌)만 외부 연결. 송금 기능 없음.</span></div>
+<div class="kv"><b>MeetingEscrow</b><span>모임/차수 단위 에스크로. 예치금 집계 + 락 상태 + 총무 출금/반납 추적.</span></div>
+<div class="kv"><b>BankAccount</b><span>현금화(출금) 대상 계좌. 부원=환급 수취, 총무=모임 자금 인출.</span></div>
+<span class="pg-num">4</span></div><div class="page"><span class="pg-foot">정책 · 예외 처리</span>
+<div class="doc-h">4 · Operating Policy</div><div class="doc-t">신용 등급 · 패널티</div>
+<p class="doc-lead">총무의 먹튀·지연을 시스템이 자동 제어한다. TrustProfile(매너/신뢰 점수)과 연동.</p>
+<div class="kv"><b>반납 데드라인</b><span>모임 종료 후 지정 기한(예: 12시간) 내 영수증 증빙 + 잔액 반납 완료</span></div><div class="kv"><b>지연 차감</b><span>데드라인 초과 시 신용등급 점수 자동 차감(초과 시간 비례 가능)</span></div><div class="kv"><b>권한 박탈</b><span>등급이 임계 이하 → 향후 총무(방장) 권한 박탈, 신규 모임 개설/출금 제한</span></div><div class="kv"><b>회복</b><span>정상 정산 누적 시 점수 회복. TrustProfile.score/grade와 연동</span></div>
+
+<h2 class="sec">영수증 조작 방지 (OCR)</h2>
+<div class="kv"><b>추출 항목</b><span>결제 금액 · 가게명 · 결제 일시를 영수증 이미지에서 자동 추출</span></div><div class="kv"><b>강제 매핑</b><span>추출 금액이 지출 입력창에 강제 매핑 → 총무 임의 금액 위조 차단</span></div><div class="kv"><b>검증</b><span>추출 금액 ≠ 입력 금액 시 경고/반려. 다중 영수증 합산 지원</span></div><div class="kv"><b>저장</b><span>원본 이미지 + OCR 메타(금액·상호·일시·신뢰도) 보관(감사 추적)</span></div>
+<div class="callout"><b>강제 매핑</b> · OCR 추출 금액이 지출 입력값으로 강제 매핑되어 총무의 임의 금액 위조를 원천 차단. 불일치 시 반려.</div>
+
+<h2 class="sec">동시성 · 인터셉트 방어</h2>
+<div class="kv"><b>마감 경합</b><span>만남 기한 직전 대량 동시 취소 → 모임방 상태 변화 요청 격리·순차 처리</span></div><div class="kv"><b>취소 vs 출금</b><span>총무 출금 타이밍과 부원 취소 타이밍 충돌 방지 → 모임 단위 직렬화 락</span></div><div class="kv"><b>멱등</b><span>출금·반납·환급은 Idempotency-Key로 중복 방지. 원장 append-only</span></div><div class="kv"><b>정합성</b><span>에스크로 잔액 = Σ(DEPOSIT) − Σ(PAYOUT) + Σ(RETURN) − Σ(SETTLE_REFUND) 항상 검증</span></div>
+<span class="pg-num">5</span></div><div class="page"><span class="pg-foot">법적 전략 · API</span>
+<div class="doc-h">5 · Legal & Business</div><div class="doc-t">법적 규제 · 방어 전략</div>
+<div class="kv"><b>선불업 등록 유예</b><span>포인트는 외부 범용 사용 불가, 오직 특정 모임방 정산 목적. 정산 후 즉시 현금 인출 → 발행 잔액 최소화로 선불업 등록 면제 기준 유지. 회원 간 임의 송금 완전 제한.</span></div><div class="kv"><b>수수료 0원</b><span>충전·출금 수수료 미수취 → 세법상 비영리 플랫폼 지위. 초기 런칭 시 사업자 등록 없이 합법 운영 가능.</span></div><div class="kv"><b>광고 수익</b><span>자금 결제선에서 수수료 대신 인앱 광고(AdMob 등). 총무 출금 대기(3~5초)·정산 피드 화면에 배치. 금융 규제 무관한 정당 수익, 소액은 종합소득세 신고로 처리.</span></div>
+<div class="callout warn">⚖️ <b>설계 제약(법적 근거)</b> · ① 회원 간 임의 송금 API 제공 금지 ② 포인트는 모임 정산 목적 외 사용 불가 ③ 충전·출금 수수료 0원 ④ 정산 완료 즉시 현금화 유도(발행 잔액 최소화). 이 4가지는 선불업 등록 유예의 전제이므로 구현 시 반드시 유지.</div>
+
+<h2 class="sec">API 엔드포인트 (에스크로)</h2>
+<p class="doc-lead">기존 API에 추가/대체되는 에스크로 전용 엔드포인트. 권한은 단계별로 제한된다.</p>
+<div class="api">
+<div class="api-row"><span class="m post">POST</span><b style="color:var(--ink)">/meetings/{id}/rounds/{rid}/deposit</b> <span class="d">— 부원 차수 예치(포인트 차감, 부족분 충전) <i style="color:var(--pp)">[verified]</i></span></div><div class="api-row"><span class="m delete">DELETE</span><b style="color:var(--ink)">/meetings/{id}/rounds/{rid}/deposit</b> <span class="d">— 마감 전 취소 → 즉시 환불 (LOCKED면 409) <i style="color:var(--pp)">[self]</i></span></div><div class="api-row"><span class="m post">POST</span><b style="color:var(--ink)">/meetings/{id}/lock</b> <span class="d">— 만남 시각 도달 → 락(스케줄러/시스템) <i style="color:var(--pp)">[system]</i></span></div><div class="api-row"><span class="m get">GET</span><b style="color:var(--ink)">/meetings/{id}/escrow</b> <span class="d">— 에스크로 잔액·락 상태·참여 인원 <i style="color:var(--pp)">[club.member]</i></span></div><div class="api-row"><span class="m post">POST</span><b style="color:var(--ink)">/meetings/{id}/payout</b> <span class="d">— 총무 출금(현금화) — LOCKED 이후만, 타이머 시작 <i style="color:var(--pp)">[club.treasurer]</i></span></div><div class="api-row"><span class="m post">POST</span><b style="color:var(--ink)">/meetings/{id}/settlement/receipts</b> <span class="d">— 영수증 업로드 → OCR 추출 <i style="color:var(--pp)">[club.treasurer]</i></span></div><div class="api-row"><span class="m post">POST</span><b style="color:var(--ink)">/meetings/{id}/settlement/return</b> <span class="d">— 실지출 입력 + 잔액 포인트 반납 <i style="color:var(--pp)">[club.treasurer]</i></span></div><div class="api-row"><span class="m post">POST</span><b style="color:var(--ink)">/meetings/{id}/settlement/auto</b> <span class="d">— 반납금 ÷ 인원 자동 균등 환급(시스템) <i style="color:var(--pp)">[system]</i></span></div><div class="api-row"><span class="m post">POST</span><b style="color:var(--ink)">/me/wallet/charge</b> <span class="d">— 카카오페이 포인트 충전(수수료 0) <i style="color:var(--pp)">[verified]</i></span></div><div class="api-row"><span class="m post">POST</span><b style="color:var(--ink)">/me/wallet/cashout</b> <span class="d">— 포인트 → 본인 계좌 현금화(수수료 0) <i style="color:var(--pp)">[self]</i></span></div><div class="api-row"><span class="m get">GET</span><b style="color:var(--ink)">/me/wallet</b> <span class="d">— 포인트 잔액·거래내역 <i style="color:var(--pp)">[self]</i></span></div>
+</div>
+<div class="callout ok">✅ <b>대체 관계</b> · 기존 "참석 신청 = 카카오페이 즉시 이체"는 <b>"예치 → 락 → 총무 출금"</b> 모델로 대체된다. 카카오페이는 이제 <b>포인트 충전·현금화 레일</b>로만 쓰인다. OpenAPI에 동일 반영.</div>
+<span class="pg-num">6</span></div></body></html>

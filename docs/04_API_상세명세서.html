@@ -1,0 +1,233 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>모이쇼 — API 상세 명세</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"><style>
+:root{--ink:#1f2430;--mut:#5b6170;--faint:#969cab;--line:#e2e4e9;--line2:#eef0f3;--paper:#ece9e1;--white:#fff;--ac:#3b5cff;--acsoft:#eef1ff;--pp:#7c5cff;--ppsoft:#f1ecff;--ok:#1f9d57;--oksoft:#e7f6ee;--warn:#c47f00;--warnsoft:#fdf3e2;--dang:#e5484d;--dangsoft:#fdecec;--code:#11151f;}
+*{box-sizing:border-box;}html,body{margin:0;}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;font-size:13px;}
+.page{width:816px;margin:28px auto;background:var(--white);box-shadow:0 2px 14px rgba(0,0,0,.09);border-radius:3px;padding:54px 50px;position:relative;}
+.pg-foot{position:absolute;bottom:22px;left:50px;font-size:11px;color:var(--faint);}
+.pg-num{position:absolute;bottom:22px;right:50px;font-size:11px;color:var(--faint);}
+.cover{display:flex;flex-direction:column;min-height:944px;}
+.cover .tagline{font-size:13px;letter-spacing:.18em;color:var(--ac);font-weight:600;text-transform:uppercase;}
+.cover h1{font-size:45px;line-height:1.08;margin:14px 0 0;letter-spacing:-.025em;font-weight:700;}
+.cover .sub{font-size:18px;color:var(--mut);margin-top:16px;max-width:580px;}
+.cover .rule{height:3px;width:64px;background:var(--ink);margin:26px 0;}
+.cover .pill{display:inline-flex;gap:7px;align-items:center;font-size:12px;font-weight:600;color:var(--pp);background:var(--ppsoft);border-radius:99px;padding:5px 13px;width:fit-content;}
+.cover .meta{margin-top:auto;display:grid;grid-template-columns:repeat(2,1fr);gap:14px 30px;border-top:1px solid var(--line);padding-top:22px;}
+.cover .meta b{display:block;font-size:11px;letter-spacing:.04em;color:var(--faint);text-transform:uppercase;margin-bottom:3px;}
+.cover .meta span{font-size:14px;font-weight:600;}
+.doc-h{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ac);font-weight:700;margin:0 0 4px;}
+.doc-t{font-size:24px;font-weight:700;margin:0 0 7px;letter-spacing:-.01em;}
+.doc-lead{font-size:13px;color:var(--mut);margin:0 0 18px;max-width:660px;}
+h2.sec{font-size:16px;font-weight:700;margin:22px 0 8px;padding-bottom:5px;border-bottom:2px solid var(--ink);}
+table{width:100%;border-collapse:collapse;font-size:11.5px;margin:6px 0;}
+th{background:var(--line2);color:var(--faint);font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:6px 8px;font-weight:700;}
+td{padding:6px 8px;border-bottom:1px solid var(--line2);color:var(--mut);vertical-align:top;}
+td b{color:var(--ink);}
+td.k{font-family:"IBM Plex Mono",monospace;color:var(--ac);font-weight:600;white-space:nowrap;}
+td.code{font-family:"IBM Plex Mono",monospace;color:var(--dang);font-weight:600;white-space:nowrap;}
+.ep{border:1px solid var(--line);border-radius:9px;padding:0;margin-bottom:16px;overflow:hidden;break-inside:avoid;}
+.ep-h{display:flex;align-items:center;gap:9px;padding:11px 14px;background:var(--line2);flex-wrap:wrap;}
+.ep-m{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:11px;padding:2px 8px;border-radius:5px;color:#fff;}
+.ep-m.post{background:var(--ac);}.ep-m.get{background:var(--ok);}.ep-m.del{background:var(--dang);}.ep-m.patch{background:var(--warn);}
+.ep-path{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12.5px;color:var(--ink);}
+.ep-perm{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:600;background:var(--ppsoft);color:var(--pp);border-radius:4px;padding:2px 7px;margin-left:auto;}
+.ep-body{padding:12px 14px;}
+.ep-desc{font-size:12px;color:var(--mut);margin:0 0 10px;}
+.io-lab{font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin:8px 0 4px;display:flex;align-items:center;gap:6px;}
+.io-lab .dot{width:7px;height:7px;border-radius:2px;}
+pre{margin:0 0 4px;background:var(--code);color:#e6e9f0;border-radius:7px;padding:11px 13px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;line-height:1.5;overflow-x:auto;white-space:pre;}
+pre .c{color:#7c8499;}
+.ep-foot{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:9px;padding-top:9px;border-top:1px solid var(--line2);}
+.ep-errs{display:flex;gap:5px;flex-wrap:wrap;}
+.errtag{font-family:"IBM Plex Mono",monospace;font-size:9px;font-weight:600;background:var(--dangsoft);color:var(--dang);border-radius:4px;padding:1px 6px;}
+.ep-note{font-size:11px;color:var(--mut);flex:1;min-width:200px;}
+.ep-note b{color:var(--ink);}
+.flowrow{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:12px;}
+.flowrow b{color:var(--ac);font-family:"IBM Plex Mono",monospace;font-size:11px;}
+.st{display:grid;grid-template-columns:130px 1fr;gap:12px;padding:7px 0;border-bottom:1px solid var(--line2);font-size:12px;}
+.st b{color:var(--ink);}.st code{font-family:"IBM Plex Mono",monospace;color:var(--pp);font-size:11px;}
+.callout{border:1px solid var(--line);border-left:4px solid var(--pp);background:var(--ppsoft);border-radius:8px;padding:11px 14px;font-size:12px;margin:12px 0;}
+.callout b{color:var(--pp);}
+@media print{body{background:none;}.page{width:auto;margin:0;box-shadow:none;border-radius:0;padding:0;}.pg-foot,.pg-num{display:none;}.page+.page{break-before:page;}.ep,tr,.flowrow,.st{break-inside:avoid;}*{print-color-adjust:exact;-webkit-print-color-adjust:exact;}}
+@page{margin:0.6in;}
+</style></head><body><div class="page"><span class="pg-foot">표지</span><div class="cover">
+<div class="tagline">API Detail · Schemas & Webhook</div>
+<h1>모이쇼<br>API 상세 명세</h1>
+<div class="sub">핵심 엔드포인트의 요청/응답 JSON 스키마, 표준 에러 코드, 카카오페이 결제·환불 webhook 시퀀스와 상태 전이를 담은 구현 착수용 명세.</div>
+<div class="rule"></div>
+<div class="pill">⚙ 10개 핵심 엔드포인트 · 에러 코드 · 결제 시퀀스</div>
+<div class="meta">
+<div><b>형식</b><span>REST · JSON · KRW(정수)·ISO8601</span></div>
+<div><b>결제</b><span>카카오페이 · 멱등(Idempotency-Key)</span></div>
+<div><b>선행 문서</b><span>데이터 정의서 · API 권한 설계서</span></div>
+<div><b>일자</b><span>2026.06.17</span></div>
+</div></div><span class="pg-num">1</span></div><div class="page"><span class="pg-foot">공통 규약 · 에러</span>
+<div class="doc-h">Conventions</div><div class="doc-t">공통 규약</div>
+<table><tbody>
+<tr><td style="width:26%"><b>Base URL</b></td><td><code>https://api.moisho.app/v1</code></td></tr>
+<tr><td><b>인증</b></td><td><code>Authorization: Bearer &lt;accessToken&gt;</code> (15분) · <code>refreshToken</code>(30일)로 갱신</td></tr>
+<tr><td><b>금액 / 시간</b></td><td>금액=정수 KRW(원), 시간=ISO8601 UTC(<code>2026-06-15T09:00:00Z</code>)</td></tr>
+<tr><td><b>페이지네이션</b></td><td>커서 기반 <code>?cursor=&amp;limit=20</code> → <code>{ items:[], nextCursor }</code></td></tr>
+<tr><td><b>멱등성</b></td><td>결제·환불 POST는 <code>Idempotency-Key</code> 헤더 필수. 동일 키 재요청=동일 결과</td></tr>
+<tr><td><b>에러 포맷</b></td><td><code>{ "error": { "code", "message", "details" } }</code></td></tr>
+<tr><td><b>버전</b></td><td>URL path 버전(<code>/v1</code>). 하위호환 깨질 때만 증가</td></tr>
+</tbody></table>
+
+<h2 class="sec">표준 에러 코드</h2>
+<table><thead><tr><th style="width:70px">HTTP</th><th style="width:34%">code</th><th>의미</th></tr></thead><tbody>
+<tr><td class="k">400</td><td class="code">INVALID_REQUEST</td><td>요청 형식/필드 오류</td></tr><tr><td class="k">401</td><td class="code">UNAUTHENTICATED</td><td>토큰 없음/만료</td></tr><tr><td class="k">403</td><td class="code">FORBIDDEN</td><td>권한 부족(역할·스코프)</td></tr><tr><td class="k">403</td><td class="code">KYC_REQUIRED</td><td>본인인증 필요(금융 행위)</td></tr><tr><td class="k">404</td><td class="code">NOT_FOUND</td><td>리소스 없음</td></tr><tr><td class="k">409</td><td class="code">CONFLICT</td><td>상태 충돌(중복 신청·이미 마감 등)</td></tr><tr><td class="k">409</td><td class="code">ROUND_FULL</td><td>차수 정원 초과</td></tr><tr><td class="k">409</td><td class="code">DEADLINE_PASSED</td><td>펀딩 마감 지남</td></tr><tr><td class="k">409</td><td class="code">ALREADY_PAID</td><td>이미 결제됨(멱등 위반)</td></tr><tr><td class="k">422</td><td class="code">SETTLEMENT_INVALID</td><td>실지출 &gt; 취합 등 정산 검증 실패</td></tr><tr><td class="k">429</td><td class="code">RATE_LIMITED</td><td>요청 과다 / KYC 5회 실패 잠금</td></tr><tr><td class="k">502</td><td class="code">PAYMENT_PROVIDER_ERROR</td><td>카카오페이 응답 오류</td></tr><tr><td class="k">500</td><td class="code">INTERNAL</td><td>서버 오류</td></tr>
+</tbody></table>
+<div class="callout"><b>금융 가드</b> · 미인증 사용자가 납부·개설·정산 호출 시 <code>403 KYC_REQUIRED</code>. 정원·마감·중복은 <code>409</code> 계열로 구분해 클라이언트가 분기 가능.</div>
+<span class="pg-num">2</span></div><div class="page"><span class="pg-foot">엔드포인트 상세</span><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/auth/oauth/{provider}</span><span class="ep-perm">public</span></div>
+  <div class="ep-body"><p class="ep-desc">소셜 로그인/가입. 신규면 needsOnboarding=true.</p>
+  <div class="io-lab"><span class="dot" style="background:var(--ac)"></span>Request</div><pre>{
+  "authorizationCode": "kakao_auth_code",
+  "redirectUri": "moisho:<span class="c">//oauth/kakao"</span>
+}</pre>
+  <div class="io-lab"><span class="dot" style="background:var(--ok)"></span>Response 200</div><pre>{
+  "accessToken": "eyJ...",          <span class="c">// 15m</span>
+  "refreshToken": "eyJ...",         <span class="c">// 30d</span>
+  "needsOnboarding": true,
+  "user": { "id": "u_8f3", "nickname": null, "verified": false }
+}</pre>
+  <div class="ep-foot"><div class="ep-errs"><span class="errtag">400</span><span class="errtag">502</span></div><div class="ep-note"><b>비고</b> · provider ∈ kakao·apple·google. 온보딩 미완 시 /auth/signup/profile 유도.</div></div>
+  </div></div><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/auth/kyc</span><span class="ep-perm">auth</span></div>
+  <div class="ep-body"><p class="ep-desc">본인인증 검증. 통과 시 verified + 지갑 자동 개설.</p>
+  <div class="io-lab"><span class="dot" style="background:var(--ac)"></span>Request</div><pre>{
+  "method": "kakao",                <span class="c">// kakao·telecom·ipin</span>
+  "impUid": "imp_1234567890"        <span class="c">// 인증기관 토큰</span>
+}</pre>
+  <div class="io-lab"><span class="dot" style="background:var(--ok)"></span>Response 200</div><pre>{
+  "verified": true,
+  "wallet": { "id": "w_1", "balance": 0, "currency": "KRW" }
+}</pre>
+  <div class="ep-foot"><div class="ep-errs"><span class="errtag">400</span><span class="errtag">429</span></div><div class="ep-note"><b>비고</b> · 5회 실패 시 429 + lockUntil. 성공 시 TrustProfile 초기화(grade=씨앗).</div></div>
+  </div></div><span class="pg-num">3</span></div><div class="page"><span class="pg-foot">엔드포인트 상세</span><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/clubs/{id}/applications</span><span class="ep-perm">verified</span></div>
+  <div class="ep-body"><p class="ep-desc">가입 신청 — 폼빌더 답변 제출.</p>
+  <div class="io-lab"><span class="dot" style="background:var(--ac)"></span>Request</div><pre>{
+  "answers": [
+    { "questionId": "q1", "value": ["🎸 기타"] },
+    { "questionId": "motivation", "value": "고등학교 때부터 밴드를..." }
+  ],
+  "note": "보컬/통기타 3년차입니다."
+}</pre>
+  <div class="io-lab"><span class="dot" style="background:var(--ok)"></span>Response 200</div><pre>{
+  "id": "app_22",
+  "status": "pending",
+  "appliedAt": "2026-06-17T05:02:00Z"
+}</pre>
+  <div class="ep-foot"><div class="ep-errs"><span class="errtag">400</span><span class="errtag">403</span><span class="errtag">409</span></div><div class="ep-note"><b>비고</b> · 409=이미 신청/회원. 운영진 승인 시 Membership 생성 + 알림.</div></div>
+  </div></div><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/clubs/{id}/meetings</span><span class="ep-perm">club.staff</span></div>
+  <div class="ep-body"><p class="ep-desc">동아리 모임 개설(차수·예산안 포함).</p>
+  <div class="io-lab"><span class="dot" style="background:var(--ac)"></span>Request</div><pre>{
+  "title": "정기 대관 연습 및 뒷풀이",
+  "category": "music",
+  "datetime": "2026-06-15T09:00:00Z",
+  "fundingDeadline": "2026-06-14T09:00:00Z",
+  "description": "6월 공연 준비 합주...",
+  "costBreakdown": [
+    { "label": "합주실 대관료", "amount": 270000, "fixed": true },
+    { "label": "뒷풀이 식비",   "amount": 210000, "fixed": false }
+  ],
+  "rounds": [
+    { "label": "1차", "title": "합주", "time": "18:00~21:00",
+      "place": "사운드스튜디오", "cost": 27000, "min": 5, "max": 12 },
+    { "label": "2차", "title": "뒷풀이", "time": "21:30~",
+      "place": "이자카야", "cost": 18000, "min": null, "max": 10 }
+  ],
+  "rules": ["정시 참석", "악기 지참"]
+}</pre>
+  <div class="io-lab"><span class="dot" style="background:var(--ok)"></span>Response 200</div><pre>{
+  "id": "m_91", "status": "recruiting",
+  "perHead": 40000, "currentPeople": 0,
+  "rounds": [ { "id": "r_1", "cost": 27000, "cur": 0, "max": 12 },
+              { "id": "r_2", "cost": 18000, "cur": 0, "max": 10 } ]
+}</pre>
+  <div class="ep-foot"><div class="ep-errs"><span class="errtag">400</span><span class="errtag">403</span></div><div class="ep-note"><b>비고</b> · fixed=고정비(노쇼 환불 불가). 번개는 POST /meetings/flash + noShowDeposit.</div></div>
+  </div></div><span class="pg-num">4</span></div><div class="page"><span class="pg-foot">엔드포인트 상세</span><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/meetings/{id}/attendances</span><span class="ep-perm">verified</span></div>
+  <div class="ep-body"><p class="ep-desc">참석 신청 — 선택 차수 합산, 결제 대기 생성.</p>
+  <div class="io-lab"><span class="dot" style="background:var(--ac)"></span>Request</div><pre>{
+  "roundIds": ["r_1", "r_2"]
+}</pre>
+  <div class="io-lab"><span class="dot" style="background:var(--ok)"></span>Response 200</div><pre>{
+  "id": "att_55",
+  "status": "pending_payment",
+  "rounds": ["r_1","r_2"],
+  "amount": 45000,
+  "payment": { "required": true }
+}</pre>
+  <div class="ep-foot"><div class="ep-errs"><span class="errtag">403</span><span class="errtag">409</span><span class="errtag">ROUND_FULL</span><span class="errtag">DEADLINE_PASSED</span></div><div class="ep-note"><b>비고</b> · 정원·마감 검증. 차수 단위 — 일부 차수만 신청 가능.</div></div>
+  </div></div><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/payments/kakao/ready</span><span class="ep-perm">verified</span></div>
+  <div class="ep-body"><p class="ep-desc">카카오페이 결제 준비(차수 합산액).</p>
+  <div class="io-lab"><span class="dot" style="background:var(--ac)"></span>Request</div><pre>{
+  "attendanceId": "att_55"
+}
+<span class="c">// header: Idempotency-Key: &lt;uuid&gt;</span></pre>
+  <div class="io-lab"><span class="dot" style="background:var(--ok)"></span>Response 200</div><pre>{
+  "tid": "T1234567890",
+  "redirectUrl": "https:<span class="c">//kakaopay/.../approve",   // PC</span>
+  "appScheme": "kakaotalk:<span class="c">//kakaopay/pg?...",       // mobile</span>
+  "amount": 45000
+}</pre>
+  <div class="ep-foot"><div class="ep-errs"><span class="errtag">409</span><span class="errtag">ALREADY_PAID</span><span class="errtag">502</span></div><div class="ep-note"><b>비고</b> · partner_order_id=att_55 기준 멱등. PaymentProvider 어댑터로 추상화.</div></div>
+  </div></div><span class="pg-num">5</span></div><div class="page"><span class="pg-foot">엔드포인트 상세</span><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/payments/kakao/approve</span><span class="ep-perm">verified</span></div>
+  <div class="ep-body"><p class="ep-desc">결제 승인(리다이렉트 복귀 콜백).</p>
+  <div class="io-lab"><span class="dot" style="background:var(--ac)"></span>Request</div><pre>{
+  "tid": "T1234567890",
+  "pgToken": "pg_xxx"
+}</pre>
+  <div class="io-lab"><span class="dot" style="background:var(--ok)"></span>Response 200</div><pre>{
+  "paymentId": "pay_77",
+  "status": "completed",
+  "attendance": { "id": "att_55", "status": "paid" },
+  "ledgerEntries": ["le_201", "le_202"]   <span class="c">// 차수별 분개</span>
+}</pre>
+  <div class="ep-foot"><div class="ep-errs"><span class="errtag">409</span><span class="errtag">502</span></div><div class="ep-note"><b>비고</b> · webhook과 멱등 합류. 차수별 Attendance=paid, 모임통장 자동 수취 반영.</div></div>
+  </div></div><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/payments/kakao/webhook</span><span class="ep-perm">system</span></div>
+  <div class="ep-body"><p class="ep-desc">카카오페이 비동기 통지(서명 검증).</p>
+  <div class="io-lab"><span class="dot" style="background:var(--ac)"></span>Request</div><pre>{
+  "tid": "T1234567890",
+  "status": "SUCCESS_PAYMENT",
+  "partner_order_id": "att_55",
+  "approved_at": "2026-06-14T08:52:00Z"
+}</pre>
+  <div class="io-lab"><span class="dot" style="background:var(--ok)"></span>Response 200</div><pre>200 OK   <span class="c">// 본문 없음, 멱등 ACK</span></pre>
+  <div class="ep-foot"><div class="ep-errs"><span class="errtag">400</span></div><div class="ep-note"><b>비고</b> · X-Kakao-Signature 검증. 미수신 시 폴링 폴백. 중복 통지 무시.</div></div>
+  </div></div><span class="pg-num">6</span></div><div class="page"><span class="pg-foot">엔드포인트 상세</span><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/settlements/{id}/close</span><span class="ep-perm">club.treasurer</span></div>
+  <div class="ep-body"><p class="ep-desc">정산 마감 → 1인당 환급 실행.</p>
+  <div class="io-lab"><span class="dot" style="background:var(--ac)"></span>Request</div><pre>{
+  "actualSpent": 360000,
+  "receiptFileIds": ["file_9"],
+  "refundMethod": "kakaopay"        <span class="c">// kakaopay(즉시) | ledger(장부 적립)</span>
+}</pre>
+  <div class="io-lab"><span class="dot" style="background:var(--ok)"></span>Response 200</div><pre>{
+  "id": "set_30", "status": "closed",
+  "collected": 400000, "spent": 360000,
+  "surplus": 40000, "perHeadRefund": 4000,
+  "refunds": [ { "userId":"u_1", "amount":4000, "status":"processing" } ]
+}</pre>
+  <div class="ep-foot"><div class="ep-errs"><span class="errtag">403</span><span class="errtag">422</span><span class="errtag">SETTLEMENT_INVALID</span></div><div class="ep-note"><b>비고</b> · 422=실지출&gt;취합. kakaopay=즉시 환불 큐, ledger=지갑 적립(다음 모임 차감).</div></div>
+  </div></div><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/refunds</span><span class="ep-perm">club.treasurer | op.finance</span></div>
+  <div class="ep-body"><p class="ep-desc">카카오페이 즉시 환불(취소·정산 잔액).</p>
+  <div class="io-lab"><span class="dot" style="background:var(--ac)"></span>Request</div><pre>{
+  "source": "attendance",          <span class="c">// attendance | settlement</span>
+  "sourceId": "att_55",
+  "reason": "user_cancel"
+}
+<span class="c">// header: Idempotency-Key: &lt;uuid&gt;</span></pre>
+  <div class="io-lab"><span class="dot" style="background:var(--ok)"></span>Response 200</div><pre>{
+  "refundId": "rf_12",
+  "amount": 18000,                  <span class="c">// 변동비만(고정비 제외)</span>
+  "status": "completed",
+  "breakdown": { "variable": 18000, "fixedRetained": 27000 }
+}</pre>
+  <div class="ep-foot"><div class="ep-errs"><span class="errtag">409</span><span class="errtag">502</span></div><div class="ep-note"><b>비고</b> · 고정비(fixed=true) 차수는 환불 제외. 번개 노쇼는 예약금 몰수.</div></div>
+  </div></div><span class="pg-num">7</span></div><div class="page"><span class="pg-foot">결제 시퀀스 · 상태</span>
+<div class="doc-h">Payment Sequence</div><div class="doc-t">카카오페이 결제·환불 시퀀스</div>
+<p class="doc-lead">approve(동기 복귀)와 webhook(비동기)이 같은 결제를 멱등하게 합류시켜 이중 확정을 막는다.</p>
+<div class="flowrow"><b>1. App → Server</b><span>POST /meetings/{id}/attendances {roundIds} → att(pending_payment), amount</span></div><div class="flowrow"><b>2. App → Server</b><span>POST /payments/kakao/ready (Idempotency-Key) → tid·redirect/appScheme</span></div><div class="flowrow"><b>3. App → KakaoPay</b><span>앱 스킴/리다이렉트로 결제창 진입 → 사용자 승인</span></div><div class="flowrow"><b>4. KakaoPay → App</b><span>pg_token 반환(redirect 복귀)</span></div><div class="flowrow"><b>5. App → Server</b><span>POST /payments/kakao/approve {tid, pgToken}</span></div><div class="flowrow"><b>6. KakaoPay → Server</b><span>POST /payments/kakao/webhook {SUCCESS_PAYMENT} (비동기·서명)</span></div><div class="flowrow"><b>7. Server</b><span>approve+webhook 멱등 합류 → payment=completed, 차수 att=paid, 장부 분개, 알림</span></div>
+<div class="callout"><b>실패·복구</b> · webhook 미수신 시 ready 시 발급한 tid로 <code>주문 조회</code> 폴링 폴백. approve 실패+webhook 성공이면 webhook 기준으로 확정. 환불도 동일 멱등 규칙.</div>
+
+<h2 class="sec">상태 전이 요약</h2>
+<div class="st"><b>Attendance</b><code>pending_payment → paid → (cancelled / noshow)</code></div><div class="st"><b>Payment</b><code>ready → approved/completed → (failed / refunded)</code></div><div class="st"><b>Settlement</b><code>open(작성중) → closed(마감) ＋ refunds: processing → completed</code></div><div class="st"><b>Refund</b><code>requested → processing → completed / failed</code></div>
+<div class="callout"><b>차수 단위 원칙</b> · 한 모임에 여러 차수를 신청하면 결제는 1건(합산)이지만 차수별 Attendance·LedgerEntry로 분개되어, 일부 차수 취소·노쇼·부분 환불이 독립 처리된다.</div>
+<span class="pg-num">8</span></div></body></html>
