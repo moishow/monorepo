@@ -143,7 +143,7 @@ pre .c{color:#7c8499;}
               { "id": "r_2", "cost": 18000, "cur": 0, "max": 10 } ]
 }</pre>
   <div class="ep-foot"><div class="ep-errs"><span class="errtag">400</span><span class="errtag">403</span></div><div class="ep-note"><b>비고</b> · fixed=고정비(노쇼 환불 불가). 번개는 POST /meetings/flash + noShowDeposit.</div></div>
-  </div></div><span class="pg-num">4</span></div><div class="page"><span class="pg-foot">엔드포인트 상세</span><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/meetings/{id}/attendances</span><span class="ep-perm">verified</span></div>
+  </div></div><span class="pg-num">4</span></div><div class="page"><span class="pg-foot">엔드포인트 상세</span><div class="callout" style="border-left:4px solid #FF4B4B;background:#FFECEC;margin-bottom:14px"><b style="color:#C82424">⚠ 구 직접결제 모델(폐기) — 정본은 에스크로</b> · 이 페이지의 <code>/meetings/{id}/attendances</code> · <code>/payments/kakao/ready·approve</code> · <code>/refunds</code> · <code>/settlements/{id}/close</code> 는 카카오페이 직접이체 모델 잔재다. 머니플로우 정본은 <code>openapi.yaml §7·§8</code> + <code>05_포인트에스크로정산모델</code> 의 에스크로 엔드포인트(<code>rounds/{rid}/deposit · lock · payout-consent · payout · settlement/receipts · return · auto</code>). <code>/payments/kakao/webhook</code> 만 포인트 충전(<code>/me/wallet/charge</code>) 확인용으로 유지.</div><div class="ep"><div class="ep-h"><span class="ep-m post">POST</span><span class="ep-path">/meetings/{id}/attendances</span><span class="ep-perm">verified</span></div>
   <div class="ep-body"><p class="ep-desc">참석 신청 — 선택 차수 합산, 결제 대기 생성.</p>
   <div class="io-lab"><span class="dot" style="background:var(--ac)"></span>Request</div><pre>{
   "roundIds": ["r_1", "r_2"]

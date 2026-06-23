@@ -109,7 +109,7 @@
   --text-title:     var(--gray-800);  /* Title / 모임명 */
   --text-body:      var(--gray-700);  /* Body 본문 */
   --text-muted:     var(--gray-500);  /* Caption 보조 */
-  --text-disabled:  #767F92;          /* 메타/타임스탬프 — gray-400보다 진하게(대비 ↑, WCAG 근접) */
+  --text-disabled:  #767F92;          /* 비활성/disabled UI 전용 (흰 배경 4.02:1 — WCAG 1.4.3 비활성 컴포넌트 대비 면제). 읽는 메타·타임스탬프엔 --text-muted(4.5:1↑) 사용 */
   --text-faint:     var(--gray-400);  /* 순수 장식용(아이콘/플레이스홀더) */
   --text-on-brand:  var(--white);
   --text-link:      var(--moisho-blue-500);

@@ -31,8 +31,8 @@
 | text-strong (금액/Display) | `#161A24` |
 | text-title | `#272D3B` |
 | text-body | `#3C4456` |
-| text-muted | `#6E7689` |
-| text-disabled | `#767F92` |
+| text-muted (읽는 메타·캡션, 흰 배경 4.5:1↑) | `#6E7689` |
+| text-disabled (비활성 UI 전용 · WCAG 면제) | `#767F92` |
 | surface-page / surface-card | `#FFFFFF` |
 | surface-sunken (수치 카드 배경) | `#F4F6FA` |
 | border-subtle | `#EBEEF4` |

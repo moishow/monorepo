@@ -4,7 +4,7 @@ info:
   version: "1.0.0"
   description: |
     동아리·소모임 회비/펀딩 핀테크. 결제는 앱 포인트 기반 기간 제한형 에스크로 모델.
-    카카오페이는 포인트 충전·현금화 레일로만 사용(회원 간 송금 없음). 거래 단위는 차수(Round),
+    카카오페이는 포인트 충전·현금화 레일로만 사용(회원 간 송금 없음, 포인트는 모임 정산 목적 외 사용 불가). 거래 단위는 차수(Round),
     잔액은 가상 장부(LedgerEntry) 분개로 표현. 상세 설계는 docs/ 의 문서 + 포인트 에스크로 정산 모델 설계서 참고.
 
     에스크로 흐름: 예치(OPEN) → 만남시각 락(LOCKED) → 총무 출금(WITHDRAWN) → 증빙·반납(SETTLING) → 자동 정산·현금화(DONE).
@@ -120,7 +120,7 @@ paths:
   /me/notifications/{id}:
     patch: { tags: [Auth], summary: 알림 읽음 처리 (self), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "204": { description: No Content } } }
   /me/notification-prefs:
-    get: { tags: [Auth], summary: 알림 수신 토글 조회 (self), responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/NotificationPrefs" } } } } }
+    get: { tags: [Auth], summary: 알림 수신 토글 조회 (self), responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/NotificationPrefs" } } } } } }
     patch: { tags: [Auth], summary: 알림 수신 토글 변경 (self), requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/NotificationPrefs" } } } }, responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/NotificationPrefs" } } } } } }
   /me/legal/agreements:
     get: { tags: [Auth], summary: 약관·동의 이력 (self), responses: { "200": { description: OK } } }
@@ -223,6 +223,7 @@ paths:
     get: { tags: [Club], summary: 동아리 피드 (club.member), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK } } }
     post: { tags: [Show], summary: 쇼 글 작성 (club.member), parameters: [ { $ref: "#/components/parameters/id" } ], requestBody: { content: { application/json: { schema: { $ref: "#/components/schemas/PostCreate" } } } }, responses: { "201": { description: Created } } }
   /clubs/{id}/notices:
+    get: { tags: [Club], summary: 공지 목록 (club.member), parameters: [ { $ref: "#/components/parameters/id" }, { $ref: "#/components/parameters/cursor" } ], responses: { "200": { description: OK } } }
     post: { tags: [Club], summary: 공지 작성/고정 (club.staff), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "201": { description: Created } } }
   /clubs/{id}/ledger:
     get: { tags: [Wallet], summary: 동아리 장부 잔액·히스토리 (club.member), parameters: [ { $ref: "#/components/parameters/id" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ClubLedger" } } } } } }
@@ -323,7 +324,7 @@ paths:
       description: |
         모인 에스크로 포인트를 총무 본인 계좌로 인출. OPEN 상태면 403/409로 차단(출금 잠김).
         락 스냅샷 전원 동의(PayoutConsent.allAgreed)가 아니면 409(CONSENT_PENDING)로 차단.
-        출금 성공 시 정산 데드라인 타이머(예: 12h) 시작. 멱등.
+        출금 성공 시 정산 데드라인 타이머(기본 12h, FeePolicy 설정 가능) 시작. 멱등.
       parameters: [ { $ref: "#/components/parameters/id" }, { $ref: "#/components/parameters/idempotencyKey" } ]
       requestBody: { content: { application/json: { schema: { type: object, properties: { bankAccountId: { type: string } } } } } }
       responses:
@@ -435,8 +436,10 @@ paths:
   /admin/campaigns:
     get: { tags: [Admin-Ops], summary: 캠페인(모임) 모니터 (op.ops), responses: { "200": { description: OK } } }
   /admin/posts:
+    get: { tags: [Admin-Ops], summary: 게시물 모더레이션 큐 — 신고/검수 대기 (op.content), parameters: [ { $ref: "#/components/parameters/cursor" } ], responses: { "200": { description: OK } } }
     patch: { tags: [Admin-Ops], summary: 게시물 모더레이션 (op.content), responses: { "200": { description: OK } } }
   /admin/showts:
+    get: { tags: [Admin-Ops], summary: Showts 검수 큐 — 상태 필터 (op.content), parameters: [ { name: status, in: query, schema: { type: string, enum: [pending, flagged, approved, rejected] } }, { $ref: "#/components/parameters/cursor" } ], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/ShowtsPage" } } } } } }
     patch: { tags: [Admin-Ops], summary: Showts 검수 승인/반려 (op.content), responses: { "200": { description: OK } } }
   /admin/reports:
     get: { tags: [Admin-Ops], summary: 신고 큐 (op.content), responses: { "200": { description: OK } } }
@@ -464,7 +467,7 @@ paths:
     get: { tags: [Admin-Finance], summary: 정책 조회 (op.super), responses: { "200": { description: OK } } }
     patch: { tags: [Admin-Finance], summary: 수수료·템플릿·권한 변경 (op.super), responses: { "200": { description: OK } } }
   /admin/audit-logs:
-    get: { tags: [Admin-Finance], summary: 감사 로그 (op.super), responses: { "200": { description: OK } } }
+    get: { tags: [Admin-Finance], summary: 감사 로그 (op.super), description: "민감 작업 before/after 기록 대상 — 총무 출금(payout)·정산 반납(settlement/return)·지급 승인·계정 정지·역할 위임·정책(수수료/권한) 변경·KYC 결정.", responses: { "200": { description: OK } } }
 
 components:
   securitySchemes:
@@ -582,6 +585,7 @@ components:
         id: { type: string }
         ownerType: { type: string, enum: [user, club, escrow] }
         type: { type: string, enum: [charge, deposit, refund_cancel, lock, payout_treasurer, return, settle_refund, cashout, penalty] }
+        roundId: { type: string, nullable: true, description: "차수 단위 분개의 차수(Round) ID. charge·cashout 등 차수와 무관한 분개는 null" }
         amount: { type: integer, description: "부호 포함 포인트" }
         title: { type: string }
         date: { type: string, format: date-time }
@@ -607,7 +611,7 @@ components:
         balance: { type: integer, description: "에스크로 잔액 포인트" }
         participants: { type: integer }
         lockAt: { type: string, format: date-time, description: "만남 시각(락 시점)" }
-        settlementDeadline: { type: string, format: date-time, nullable: true, description: "총무 출금 후 정산 데드라인" }
+        settlementDeadline: { type: string, format: date-time, nullable: true, description: "정산 데드라인 = 총무 출금(WITHDRAWN) 시각 + 기본 12h(FeePolicy 설정 가능)" }
     Payout:
       type: object
       properties:
