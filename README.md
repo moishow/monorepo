@@ -8,6 +8,35 @@
 
 ---
 
+## 📂 문서 바로가기
+
+> 아래 링크는 [GitHub Pages](https://moishow.github.io/design/)에서 브라우저로 바로 열립니다. (HTML 문서·프로토타입은 클릭 시 렌더링)
+
+### 설계 문서 (`docs/`)
+| 문서 | 설명 |
+|---|---|
+| [01 · PRD](docs/01_PRD.html) | 제품 요구사항 · 페르소나 · 머니플로우 · 상태머신 |
+| [02 · 데이터 정의서](docs/02_%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%A0%95%EC%9D%98%EC%84%9C.html) | 33개 엔티티 · 필드 · 관계 |
+| [03 · API 권한설계서](docs/03_API_%EA%B6%8C%ED%95%9C%EC%84%A4%EA%B3%84%EC%84%9C.html) | 85개 엔드포인트 + RBAC 권한 매트릭스 |
+| [04 · API 상세명세서](docs/04_API_%EC%83%81%EC%84%B8%EB%AA%85%EC%84%B8%EC%84%9C.html) | Req/Res 스키마 · 에러 코드 · 결제 시퀀스 |
+| [05 · 포인트 에스크로 정산모델](docs/05_%ED%8F%AC%EC%9D%B8%ED%8A%B8%EC%97%90%EC%8A%A4%ED%81%AC%EB%A1%9C%EC%A0%95%EC%82%B0%EB%AA%A8%EB%8D%B8.html) ⭐ | 머니플로우 정본 · 5단계 에스크로 · 포인트 원장 |
+
+### 디자인 (`design/`)
+| 항목 | 설명 |
+|---|---|
+| [📱 모바일 앱 프로토타입](design/prototype-app.html) | 로그인 + 5탭 하이파이 (자체완결 단일 파일) |
+| [🖥 운영 어드민 프로토타입](design/prototype-admin.html) | 웹 어드민 하이파이 (자체완결 단일 파일) |
+| [🗂 화면 정의서 / 와이어프레임](design/spec/Moisho%20Spec.html) | 로파이 플로우 참고 자료 |
+| [🎨 디자인 토큰 요약](design/design-tokens.md) | 색·타이포·간격·라운드·섀도·모션 |
+
+### 계약 · 규칙
+| 파일 | 설명 |
+|---|---|
+| [openapi.yaml](openapi.yaml) | API 계약 (OpenAPI 3.1, raw 텍스트) |
+| [CLAUDE.md](CLAUDE.md) | Claude Code 프로젝트 규칙서 |
+
+---
+
 ## 0. 이 패키지를 읽는 순서
 
 1. **이 README** — 전체 그림 · 기술 스택 · 빌드 순서
