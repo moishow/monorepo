@@ -147,11 +147,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             if (_locMode == 'gps')
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(999)),
+                decoration: BoxDecoration(color: T.successSoft, borderRadius: BorderRadius.circular(999)),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Container(width: 5, height: 5, decoration: const BoxDecoration(color: Color(0xFF22C55E), shape: BoxShape.circle)),
+                  Container(width: 5, height: 5, decoration: const BoxDecoration(color: T.success, shape: BoxShape.circle)),
                   const SizedBox(width: 4),
-                  Text('GPS', style: tx(10, FontWeight.w700, const Color(0xFF16A34A), height: 1)),
+                  Text('GPS', style: tx(10, FontWeight.w700, T.success, height: 1)),
                 ]),
               )
             else
@@ -492,7 +492,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                         border: Border.all(color: _locMode == 'gps' ? T.primary : T.borderSubtle, width: 1.5),
                       ),
                       child: Row(children: [
-                        Container(width: 34, height: 34, decoration: const BoxDecoration(color: Color(0xFFF0FDF4), shape: BoxShape.circle), child: const Icon(LucideIcons.navigation, size: 16, color: Color(0xFF16A34A))),
+                        Container(width: 34, height: 34, decoration: const BoxDecoration(color: T.successSoft, shape: BoxShape.circle), child: const Icon(LucideIcons.navigation, size: 16, color: T.success)),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

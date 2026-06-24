@@ -43,8 +43,8 @@ class MeetingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isFollow = item.isFollow;
-    final accentCol = isFollow ? const Color(0xFFF59E0B) : T.primary;
-    final accentSoft = isFollow ? const Color(0xFFFFFBEB) : T.primarySoft;
+    final accentCol = isFollow ? T.warning : T.primary;
+    final accentSoft = isFollow ? T.warningSoft : T.primarySoft;
     final dotColor = item.club != null ? (clubColors[item.clubTone] ?? accentCol) : accentCol;
     final d = ddayInfo(item.dday);
 
@@ -52,7 +52,7 @@ class MeetingCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 14),
       child: MCard(
         padding: EdgeInsets.zero,
-        borderColor: applied ? const Color(0xFF16A34A) : T.borderSubtle,
+        borderColor: applied ? T.success : T.borderSubtle,
         onTap: onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +69,7 @@ class MeetingCard extends StatelessWidget {
                   _pill('📍 $distLabel', T.primary, T.primarySoft),
                   const SizedBox(width: 6),
                 ],
-                _pill(isFollow ? '⚡ 번개' : '🏠 동아리', isFollow ? const Color(0xFFD97706) : T.primary, accentSoft),
+                _pill(isFollow ? '⚡ 번개' : '🏠 동아리', isFollow ? T.amber600 : T.primary, accentSoft),
                 const SizedBox(width: 4),
                 Text(item.time, style: tx(11, FontWeight.w500, T.textDisabled, height: 1)),
               ]),

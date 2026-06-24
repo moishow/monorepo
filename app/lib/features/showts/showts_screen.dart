@@ -322,7 +322,7 @@ class _ShowtsScreenState extends State<ShowtsScreen> {
                 child: GestureDetector(
                   onTap: () => MoishoToast.show(context, '펀딩 화면은 준비 중이에요', tone: 'info'),
                   child: Container(
-                    decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF1D4ED8), Color(0xFF7C3AED)])),
+                    decoration: const BoxDecoration(gradient: T.gradBrand),
                     child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       const Icon(LucideIcons.zap, size: 17, color: T.white),
                       const SizedBox(width: 8),
