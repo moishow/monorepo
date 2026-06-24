@@ -80,10 +80,9 @@ class _OnboardingState extends ConsumerState<OnboardingScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 20, 4),
               child: Row(children: [
-                GestureDetector(
+                MinTapTarget(
+                  const Icon(LucideIcons.arrowLeft, size: 22, color: T.textStrong),
                   onTap: _back,
-                  behavior: HitTestBehavior.opaque,
-                  child: const Padding(padding: EdgeInsets.all(6), child: Icon(LucideIcons.arrowLeft, size: 22, color: T.textStrong)),
                 ),
                 const SizedBox(width: 4),
                 Expanded(
@@ -302,13 +301,9 @@ class _OnboardingState extends ConsumerState<OnboardingScreen> {
             child: Text(doc.summary, style: tx(13.5, FontWeight.w500, T.textBody)),
           ),
         ),
-        GestureDetector(
+        MinTapTarget(
+          Text('보기', style: tx(12.5, FontWeight.w600, T.textMuted).copyWith(decoration: TextDecoration.underline)),
           onTap: () => showLegalSheet(context, doc),
-          behavior: HitTestBehavior.opaque,
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Text('보기', style: tx(12.5, FontWeight.w600, T.textMuted).copyWith(decoration: TextDecoration.underline)),
-          ),
         ),
       ]),
     );

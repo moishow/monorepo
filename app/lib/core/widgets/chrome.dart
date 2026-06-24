@@ -36,6 +36,23 @@ class MoishoStatusBar extends StatelessWidget {
   }
 }
 
+/// 최소 44px 탭 타깃 — 보이는 child 는 그대로, 히트 영역만 44px 로 확장(모바일 a11y 권장 최소치).
+class MinTapTarget extends StatelessWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final double min;
+  const MinTapTarget(this.child, {super.key, this.onTap, this.min = 44});
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: min, minHeight: min),
+          child: Center(child: child),
+        ),
+      );
+}
+
 /// 앱 헤더 — 52px, 타이틀 17/bold, 좌측 back, 우측 액션 슬롯.
 class MoishoAppHeader extends StatelessWidget {
   final String title;

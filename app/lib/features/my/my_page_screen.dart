@@ -129,7 +129,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
               ]),
             ),
           ),
-          GestureDetector(onTap: _stub, child: const Icon(LucideIcons.settings, size: 22, color: T.textMuted)),
+          MinTapTarget(const Icon(LucideIcons.settings, size: 22, color: T.textMuted), onTap: _stub),
         ]),
         const SizedBox(height: 10),
         // 아바타 + 인증 배지(verified일 때만)

@@ -472,7 +472,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                     ),
                   Text(step == 'sigungu' ? pickSido : '지역 설정', style: tx(16, FontWeight.w700, T.textStrong, height: 1)),
                   const Spacer(),
-                  GestureDetector(onTap: () => Navigator.pop(sheetCtx), child: const Icon(LucideIcons.x, size: 20, color: T.textMuted)),
+                  MinTapTarget(const Icon(LucideIcons.x, size: 20, color: T.textMuted), onTap: () => Navigator.pop(sheetCtx)),
                 ]),
               ),
               if (step == 'sido') ...[

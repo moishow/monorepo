@@ -67,10 +67,9 @@ class _ShowFeedScreenState extends ConsumerState<ShowFeedScreen> {
       children: [
         const MoishoStatusBar(),
         MoishoAppHeader(title: '쇼', actions: [
-          GestureDetector(
+          MinTapTarget(
+            const Icon(LucideIcons.squarePen, size: 22, color: T.accent),
             onTap: _stub,
-            behavior: HitTestBehavior.opaque,
-            child: const Padding(padding: EdgeInsets.all(2), child: Icon(LucideIcons.squarePen, size: 22, color: T.accent)),
           ),
         ]),
         Expanded(
@@ -113,10 +112,9 @@ class _ShowFeedScreenState extends ConsumerState<ShowFeedScreen> {
                   Text('동아리 회비·번개 정산을 안전하게', style: tx(11.5, FontWeight.w500, T.primary, height: 1.2)),
                 ]),
               ),
-              GestureDetector(
+              MinTapTarget(
+                const Icon(LucideIcons.x, size: 16, color: T.textFaint),
                 onTap: () => setState(() => _kycDismissed = true),
-                behavior: HitTestBehavior.opaque,
-                child: const Padding(padding: EdgeInsets.all(6), child: Icon(LucideIcons.x, size: 16, color: T.textFaint)),
               ),
             ]),
           ),
