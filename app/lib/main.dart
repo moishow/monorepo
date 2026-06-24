@@ -132,14 +132,16 @@ class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    Widget social(String label, Color bg, Color fg, IconData icon) => Padding(
+    final tt = Theme.of(context).textTheme;
+    Widget social(String label, Color bg, Color fg, IconData icon, {Color? border}) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: SizedBox(
             height: 54,
             child: FilledButton.icon(
               style: FilledButton.styleFrom(
-                backgroundColor: bg, foregroundColor: fg,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(T.rMd)),
+                backgroundColor: bg, foregroundColor: fg, elevation: 0,
+                side: border == null ? null : BorderSide(color: border),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(T.rLg)),
                 textStyle: const TextStyle(fontFamily: _font, fontSize: 16, fontWeight: FontWeight.w700),
               ),
               onPressed: () => context.go('/onboarding'),
@@ -155,28 +157,38 @@ class LoginScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
           child: Column(
             children: [
-              const Spacer(),
-              Container(
-                width: 84, height: 84,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [T.blue, T.purple]),
-                  borderRadius: BorderRadius.circular(T.r2xl),
-                  boxShadow: T.pop,
-                ),
-                child: const Icon(Icons.groups_rounded, color: Colors.white, size: 44),
+              const Spacer(flex: 5),
+              // 로고: 아이콘 + "모이쇼" 가로 배치 (쇼 강조)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 40, height: 40,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                          begin: Alignment.topLeft, end: Alignment.bottomRight,
+                          colors: [T.blue, T.purple]),
+                      borderRadius: BorderRadius.circular(T.rMd),
+                    ),
+                    child: const Icon(Icons.adjust_rounded, color: Colors.white, size: 24),
+                  ),
+                  const SizedBox(width: 8),
+                  Text.rich(TextSpan(children: [
+                    TextSpan(text: '모이', style: tt.displaySmall?.copyWith(color: T.textTitle)),
+                    TextSpan(text: '쇼', style: tt.displaySmall?.copyWith(color: T.purple)),
+                  ])),
+                ],
               ),
-              const SizedBox(height: 22),
-              Text('모이쇼', style: Theme.of(context).textTheme.displaySmall),
-              const SizedBox(height: 8),
-              Text('회비를 투명하게, 모임을 활기차게',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: T.textMuted)),
-              const Spacer(),
+              const SizedBox(height: 14),
+              Text('"모이고, 소통하고, 쇼하라!"',
+                  style: tt.bodyMedium?.copyWith(color: T.textMuted)),
+              const Spacer(flex: 6),
               social('카카오톡으로 3초 만에 시작하기', const Color(0xFFFEE500), const Color(0xFF191600), Icons.chat_bubble_rounded),
               social('애플 계정으로 로그인', T.textStrong, Colors.white, Icons.apple_rounded),
-              social('구글 계정으로 로그인', T.surface, T.textBody, Icons.g_mobiledata_rounded),
-              const SizedBox(height: 8),
+              social('구글 계정으로 로그인', T.surface, T.textBody, Icons.public_rounded, border: T.borderDefault),
+              const SizedBox(height: 12),
               Text('이용약관 · 개인정보처리방침 · 금융거래 가이드라인',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11)),
+                  style: tt.bodySmall?.copyWith(fontSize: 11)),
             ],
           ),
         ),
@@ -196,78 +208,145 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingState extends ConsumerState<OnboardingScreen> {
   final _nick = TextEditingController();
+  final _bio = TextEditingController();
+  final _search = TextEditingController();
   final _interests = <String>{};
   bool _agree = false;
-  static const _tags = ['#밴드', '#독서', '#사진', '#영화', '#등산', '#요리', '#게임', '#여행', '#운동'];
+  static const _tags = ['#밴드', '#독서', '#사진', '#영화', '#등산', '#요리', '#게임', '#여행'];
 
   bool get _ready => _nick.text.trim().isNotEmpty && _agree;
 
   @override
+  void initState() {
+    super.initState();
+    _bio.addListener(() => setState(() {}));
+    _search.addListener(() => setState(() {}));
+  }
+
+  @override
   void dispose() {
     _nick.dispose();
+    _bio.dispose();
+    _search.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    final q = _search.text.trim().replaceAll('#', '');
+    final shown = q.isEmpty ? _tags : _tags.where((t) => t.contains(q)).toList();
     return Scaffold(
-      appBar: AppBar(backgroundColor: T.surface, surfaceTintColor: T.surface, title: Text('프로필 설정', style: tt.titleLarge)),
       backgroundColor: T.surface,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+        child: Column(
           children: [
-            Text('닉네임', style: tt.titleMedium),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _nick,
-              onChanged: (_) => setState(() {}),
-              decoration: _dec('동아리 내에서 사용할 이름이에요'),
+            // 상단 진행 바
+            const LinearProgressIndicator(
+              value: 0.5, minHeight: 3,
+              backgroundColor: T.borderSubtle,
+              valueColor: AlwaysStoppedAnimation(T.blue),
             ),
-            const SizedBox(height: 22),
-            Text('관심사', style: tt.titleMedium),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8, runSpacing: 8,
-              children: _tags.map((tag) {
-                final on = _interests.contains(tag);
-                return GestureDetector(
-                  onTap: () => setState(() => on ? _interests.remove(tag) : _interests.add(tag)),
-                  child: _Chip(label: tag, active: on),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 22),
-            InkWell(
-              onTap: () => setState(() => _agree = !_agree),
-              borderRadius: BorderRadius.circular(T.rMd),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(children: [
-                  Icon(_agree ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                      color: _agree ? T.blue : T.borderDefault, size: 22),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text('[필수] 이용약관 및 금융 장부 기록 이용 동의', style: tt.bodyMedium)),
-                ]),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                children: [
+                  Text('프로필을 설정해요', style: tt.headlineSmall),
+                  const SizedBox(height: 6),
+                  Text('동아리에서 사용할 프로필을 설정해요',
+                      style: tt.bodyMedium?.copyWith(color: T.textMuted)),
+                  const SizedBox(height: 24),
+                  // 닉네임
+                  Text('닉네임', style: tt.titleMedium),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _nick,
+                    onChanged: (_) => setState(() {}),
+                    decoration: _dec('닉네임을 입력하세요'),
+                  ),
+                  const SizedBox(height: 6),
+                  Text('동아리 내에서 사용할 이름이에요', style: tt.bodySmall),
+                  const SizedBox(height: 20),
+                  // 자기소개 (선택) + 0/60 카운터
+                  Row(children: [
+                    Text('자기소개 ', style: tt.titleMedium),
+                    Text('(선택)', style: tt.bodySmall),
+                    const Spacer(),
+                    Text('${_bio.text.length}/60',
+                        style: tt.bodySmall?.copyWith(fontFeatures: _tnum)),
+                  ]),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _bio,
+                    maxLength: 60,
+                    maxLines: 3,
+                    buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
+                    decoration: _dec('나를 한 줄로 소개해보세요'),
+                  ),
+                  const SizedBox(height: 20),
+                  // 관심사 (선택) + 해시태그 검색
+                  Row(children: [
+                    Text('관심사 ', style: tt.titleMedium),
+                    Text('(선택)', style: tt.bodySmall),
+                  ]),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _search,
+                    decoration: _dec('관심사 해시태그 검색').copyWith(
+                      prefixIcon: const Icon(Icons.search_rounded, color: T.textMuted, size: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8, runSpacing: 8,
+                    children: shown.map((tag) {
+                      final on = _interests.contains(tag);
+                      return GestureDetector(
+                        onTap: () => setState(() => on ? _interests.remove(tag) : _interests.add(tag)),
+                        child: _Chip(label: tag, active: on),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 22),
+                  // 약관 동의 (사각 체크박스)
+                  InkWell(
+                    onTap: () => setState(() => _agree = !_agree),
+                    borderRadius: BorderRadius.circular(T.rMd),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(children: [
+                        Icon(_agree ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+                            color: _agree ? T.blue : T.borderDefault, size: 24),
+                        const SizedBox(width: 10),
+                        Expanded(child: Text('[필수] 이용약관 및 금융 장부 기록 이용 동의', style: tt.bodyMedium)),
+                      ]),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 54,
-              child: FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: T.blue, disabledBackgroundColor: T.borderDefault,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(T.rMd)),
-                  textStyle: const TextStyle(fontFamily: _font, fontSize: 16, fontWeight: FontWeight.w700),
+            // 하단 고정 버튼
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: SizedBox(
+                width: double.infinity, height: 54,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: T.blue,
+                    disabledBackgroundColor: const Color(0xFFAEBBF5),
+                    disabledForegroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(T.rLg)),
+                    textStyle: const TextStyle(fontFamily: _font, fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: _ready
+                      ? () {
+                          ref.read(loggedInProvider.notifier).state = true;
+                          context.go('/app');
+                        }
+                      : null,
+                  child: const Text('모이쇼 시작하기'),
                 ),
-                onPressed: _ready
-                    ? () {
-                        ref.read(loggedInProvider.notifier).state = true;
-                        context.go('/app');
-                      }
-                    : null,
-                child: const Text('모이쇼 시작하기'),
               ),
             ),
           ],
@@ -279,9 +358,12 @@ class _OnboardingState extends ConsumerState<OnboardingScreen> {
   InputDecoration _dec(String hint) => InputDecoration(
         hintText: hint,
         hintStyle: const TextStyle(fontFamily: _font, color: T.textMuted, fontWeight: FontWeight.w500),
-        filled: true, fillColor: T.sunken,
+        filled: true, fillColor: T.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(T.rMd), borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(T.rMd), borderSide: const BorderSide(color: T.borderDefault)),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(T.rMd), borderSide: const BorderSide(color: T.borderDefault)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(T.rMd), borderSide: const BorderSide(color: T.blue, width: 1.5)),
       );

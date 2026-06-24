@@ -16,7 +16,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Assert: 로그인 화면의 브랜드 카피와 카카오 CTA가 보인다.
-    expect(find.text('회비를 투명하게, 모임을 활기차게'), findsOneWidget);
+    expect(find.text('"모이고, 소통하고, 쇼하라!"'), findsOneWidget);
     expect(find.text('카카오톡으로 3초 만에 시작하기'), findsOneWidget);
   });
 }
