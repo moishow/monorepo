@@ -393,7 +393,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // 매너지표 헤더
         Row(children: [
-          const Icon(LucideIcons.thermometer, size: 15, color: Color(0xFFF59E0B)),
+          const Icon(LucideIcons.thermometer, size: 15, color: T.warning),
           const SizedBox(width: 6),
           Text('매너지표', style: tx(13, FontWeight.w700, T.textTitle, height: 1)),
         ]),
@@ -407,9 +407,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
               Text('$_temp℃', style: tx(28, FontWeight.w700, accent, ls: -0.02, height: 1, tab: true)),
               const SizedBox(width: 6),
-              const Icon(LucideIcons.smile, size: 13, color: Color(0xFF16A34A)),
+              const Icon(LucideIcons.smile, size: 13, color: T.success),
               const SizedBox(width: 3),
-              Text('좋아요', style: tx(11, FontWeight.w700, const Color(0xFF16A34A), height: 1)),
+              Text('좋아요', style: tx(11, FontWeight.w700, T.success, height: 1)),
             ]),
             const SizedBox(height: 12),
             // 온도 바
@@ -435,13 +435,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             Row(children: [
               Expanded(child: _mannerItem(LucideIcons.thumbsUp, '받은 칭찬', '24개', T.primary)),
               const SizedBox(width: 10),
-              Expanded(child: _mannerItem(LucideIcons.clock, '정시 참석률', '96%', const Color(0xFF16A34A))),
+              Expanded(child: _mannerItem(LucideIcons.clock, '정시 참석률', '96%', T.success)),
             ]),
             const SizedBox(height: 10),
             Row(children: [
-              Expanded(child: _mannerItem(LucideIcons.userX, '노쇼', '없음', const Color(0xFF16A34A))),
+              Expanded(child: _mannerItem(LucideIcons.userX, '노쇼', '없음', T.success)),
               const SizedBox(width: 10),
-              Expanded(child: _mannerItem(LucideIcons.messageCircle, '응답률', '92%', const Color(0xFF7C3AED))),
+              Expanded(child: _mannerItem(LucideIcons.messageCircle, '응답률', '92%', T.accent)),
             ]),
           ]),
         ),
@@ -480,9 +480,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
               child: Row(children: [
                 Expanded(child: _statCard(LucideIcons.zap, '번개 참여', '23회', T.primary)),
                 const SizedBox(width: 7),
-                Expanded(child: _statCard(LucideIcons.star, '번개 주최', '5회', const Color(0xFF7C3AED))),
+                Expanded(child: _statCard(LucideIcons.star, '번개 주최', '5회', T.accent)),
                 const SizedBox(width: 7),
-                Expanded(child: _statCard(LucideIcons.clock, '정산 지연', '없음', const Color(0xFF059669))),
+                Expanded(child: _statCard(LucideIcons.clock, '정산 지연', '없음', T.success)),
               ]),
             ),
           ]),
@@ -491,13 +491,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         // 정산 지연 0회 배너
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(T.rLg), border: Border.all(color: const Color(0xFFBBF7D0))),
+          decoration: BoxDecoration(color: T.successSoft, borderRadius: BorderRadius.circular(T.rLg), border: Border.all(color: T.mint100)),
           child: Row(children: [
             const Text('🏆', style: TextStyle(fontSize: 16)),
             const SizedBox(width: 8),
             Flexible(child: RichText(text: TextSpan(children: [
-              TextSpan(text: '정산 지연 0회 달성!', style: tx(12, FontWeight.w700, const Color(0xFF15803D), height: 1.3)),
-              TextSpan(text: '  모든 정산을 기한 내 완료했어요', style: tx(11, FontWeight.w500, const Color(0xFF16A34A), height: 1.3)),
+              TextSpan(text: '정산 지연 0회 달성!', style: tx(12, FontWeight.w700, T.successStrong, height: 1.3)),
+              TextSpan(text: '  모든 정산을 기한 내 완료했어요', style: tx(11, FontWeight.w500, T.success, height: 1.3)),
             ]))),
           ]),
         ),
@@ -566,7 +566,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(color: T.white, borderRadius: BorderRadius.circular(T.rLg), border: Border.all(color: T.borderSubtle)),
         child: Row(children: [
-          Container(width: 28, height: 28, decoration: BoxDecoration(color: const Color(0xFFDCFCE7), borderRadius: BorderRadius.circular(T.rMd)), child: const Icon(LucideIcons.check, size: 13, color: Color(0xFF16A34A))),
+          Container(width: 28, height: 28, decoration: BoxDecoration(color: T.mint100, borderRadius: BorderRadius.circular(T.rMd)), child: const Icon(LucideIcons.check, size: 13, color: T.success)),
           const SizedBox(width: 10),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -665,7 +665,7 @@ class _ArcProgress extends StatelessWidget {
   const _ArcProgress({required this.pct});
   @override
   Widget build(BuildContext context) {
-    final col = pct >= 90 ? const Color(0xFF16A34A) : pct >= 75 ? const Color(0xFFD97706) : const Color(0xFFDC2626);
+    final col = pct >= 90 ? T.success : pct >= 75 ? T.warning : T.danger;
     return SizedBox(
       width: 88, height: 88,
       child: Stack(alignment: Alignment.center, children: [
