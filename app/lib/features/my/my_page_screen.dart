@@ -493,7 +493,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(color: T.successSoft, borderRadius: BorderRadius.circular(T.rLg), border: Border.all(color: T.mint100)),
           child: Row(children: [
-            const Text('🏆', style: TextStyle(fontSize: 16)),
+            const Icon(LucideIcons.trophy, size: 15, color: T.successStrong),
             const SizedBox(width: 8),
             Flexible(child: RichText(text: TextSpan(children: [
               TextSpan(text: '정산 지연 0회 달성!', style: tx(12, FontWeight.w700, T.successStrong, height: 1.3)),
