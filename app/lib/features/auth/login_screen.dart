@@ -58,7 +58,8 @@ class LoginScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
           child: Column(
             children: [
-              const Spacer(flex: 5),
+              // 프로토타입: 브랜드+버튼을 하나의 묶음으로 세로 중앙 배치, 푸터만 하단 고정.
+              const Spacer(flex: 6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -76,7 +77,7 @@ class LoginScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 14),
               Text('"모이고, 소통하고, 쇼하라!"', style: tt.bodyMedium?.copyWith(color: T.textMuted)),
-              const Spacer(flex: 6),
+              const SizedBox(height: 36), // 브랜드→버튼 고정 간격(프로토타입)
               social(
                 provider: 'kakao',
                 label: '카카오톡으로 3초 만에 시작하기',
@@ -99,7 +100,7 @@ class LoginScreen extends ConsumerWidget {
                 logo: const GoogleLogo(),
                 border: T.borderDefault,
               ),
-              const SizedBox(height: 12),
+              const Spacer(flex: 5), // 버튼 묶음 아래 가변 공간 → 푸터 하단 고정·그룹 중앙화
               Text('이용약관 · 개인정보처리방침 · 금융거래 가이드라인',
                   style: tt.bodySmall?.copyWith(fontSize: 11)),
             ],
