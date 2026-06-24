@@ -305,7 +305,7 @@ class _OnboardingState extends ConsumerState<OnboardingScreen> {
           behavior: HitTestBehavior.opaque,
           child: Padding(
             padding: const EdgeInsets.all(6),
-            child: Text('보기', style: tx(12.5, FontWeight.w600, T.textFaint).copyWith(decoration: TextDecoration.underline)),
+            child: Text('보기', style: tx(12.5, FontWeight.w600, T.textMuted).copyWith(decoration: TextDecoration.underline)),
           ),
         ),
       ]),
