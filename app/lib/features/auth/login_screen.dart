@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/data/session.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/brand_logos.dart';
+import '../../core/widgets/chrome.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -54,7 +55,10 @@ class LoginScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: T.white,
       body: SafeArea(
-        child: Padding(
+        child: Column(children: [
+          const MoishoStatusBar(),
+          Expanded(
+            child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
           child: Column(
             children: [
@@ -106,6 +110,8 @@ class LoginScreen extends ConsumerWidget {
             ],
           ),
         ),
+          ),
+        ]),
       ),
     );
   }

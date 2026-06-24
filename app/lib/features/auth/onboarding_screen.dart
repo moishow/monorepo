@@ -8,6 +8,7 @@ import '../../core/data/fixtures.dart';
 import '../../core/data/models.dart';
 import '../../core/data/session.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/widgets/chrome.dart';
 import 'auth_dialogs.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -74,6 +75,7 @@ class _OnboardingState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            const MoishoStatusBar(),
             // 진행바 + 뒤로
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 20, 4),
