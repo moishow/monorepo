@@ -18,6 +18,9 @@ class DmConv {
   final int unread;
   final List<DmMsg> messages;
   const DmConv(this.id, this.name, this.role, this.roleTone, this.tone, this.club, this.online, this.unread, this.lastMsg, this.lastTime, this.photo, this.messages);
+
+  factory DmConv.quick(String name) =>
+      DmConv('dm', name, '멤버', 'neutral', 'blue', '', true, 0, '', '방금', '', const [DmMsg(false, '안녕하세요!', '방금')]);
 }
 
 const _dmPhotos = {

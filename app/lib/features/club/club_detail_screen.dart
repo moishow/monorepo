@@ -4,6 +4,9 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/tokens.dart';
+import '../home/post_detail_screen.dart';
+import '../settlement/settlement_detail_screen.dart';
+import '../chat/dm_list_screen.dart';
 import '../../core/widgets/chrome.dart';
 import '../../core/widgets/primitives.dart';
 import '../../core/widgets/toast.dart';
@@ -361,7 +364,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
         elevation: 'outline',
         radius: T.rXl,
         padding: const EdgeInsets.all(14),
-        onTap: () => MoishoToast.show(context, '준비 중', tone: 'info'),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PostDetailScreen())),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(T.rLg),
@@ -436,7 +439,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
           ),
           const SizedBox(width: 8),
           GestureDetector(
-            onTap: () => MoishoToast.show(context, '준비 중', tone: 'info'),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DmChatScreen(conv: DmConv.quick(m.name)))),
             behavior: HitTestBehavior.opaque,
             child: Container(
               width: 40,
@@ -684,7 +687,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
         elevation: 'outline',
         radius: T.rXl,
         padding: const EdgeInsets.all(14),
-        onTap: () => MoishoToast.show(context, '준비 중', tone: 'info'),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettlementDetailScreen())),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
             Text(title, style: tx(13, FontWeight.w600, T.textTitle, height: 1.2)),

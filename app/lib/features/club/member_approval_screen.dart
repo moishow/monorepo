@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/tokens.dart';
+import '../chat/dm_list_screen.dart';
 import '../../core/widgets/chrome.dart';
 import '../../core/widgets/primitives.dart';
-import '../../core/widgets/toast.dart';
 import '../social/public_profile_screen.dart';
 import 'club_form_builder_screen.dart';
 
@@ -220,7 +220,7 @@ class _MemberApprovalScreenState extends State<MemberApprovalScreen> {
           child: Row(children: [
             MButton('질문', variant: 'secondary', size: 'lg',
                 leadingIcon: const Icon(LucideIcons.messageCircle, size: 18, color: T.primary),
-                onTap: () => MoishoToast.show(context, '준비 중', tone: 'info')),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DmChatScreen(conv: DmConv.quick(it.name))))),
             const SizedBox(width: 8),
             Expanded(
               child: MButton('거절', variant: 'danger', size: 'lg', block: true,

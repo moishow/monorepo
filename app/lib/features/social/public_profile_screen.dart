@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/tokens.dart';
+import '../home/post_detail_screen.dart';
+import '../chat/dm_list_screen.dart';
 import '../../core/widgets/chrome.dart';
 import '../../core/widgets/primitives.dart';
 import '../../core/widgets/toast.dart';
@@ -303,7 +305,6 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 
   void _toggleFollow() => setState(() => _following = !_following);
 
-  void _stub() => MoishoToast.show(context, '준비 중', tone: 'info');
 
   void _submitReport() {
     setState(() => _reportOpen = false);
@@ -946,7 +947,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
         children: [
           for (final img in p.feedImgs)
             GestureDetector(
-              onTap: _stub,
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PostDetailScreen())),
               child: NetImage(url: img, fit: BoxFit.cover, fallback: Container(color: T.gray100)),
             ),
           // 마지막 행 빈 셀로 채우기 (프로토타입 동작)
@@ -968,7 +969,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
           top: false,
           child: MButton('DM 보내기', variant: 'primary', size: 'md', block: true,
               leadingIcon: const Icon(LucideIcons.messageCircle, size: 16, color: T.white),
-              onTap: _stub),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DmChatScreen(conv: DmConv.quick(_name))))),
         ),
       );
 
