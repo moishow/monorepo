@@ -7,9 +7,12 @@ import '../../core/data/session.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/chrome.dart';
 import '../../core/widgets/primitives.dart';
-import '../../core/widgets/toast.dart';
 import '../auth/auth_dialogs.dart';
 import '../common/meeting_card.dart';
+import '../meeting/meeting_detail_screen.dart';
+import 'post_detail_screen.dart';
+import 'show_write_screen.dart';
+import '../meeting/flash_apply_screen.dart';
 
 // 멤버 프로필 사진 (prototype MEMBER_PHOTOS)
 const _photo = {
@@ -47,7 +50,13 @@ class _ShowFeedScreenState extends ConsumerState<ShowFeedScreen> {
     3: const MeetingItem(title: '한강 출사 & 피크닉', author: '이민준', tone: 'mint', source: 'club', time: '어제', club: "서울 사진 동아리 '프레임'", clubTone: 'mint', date: '6월 22일 (일) 14:00', dday: 'D-9', tag: '출사', rounds: [Round('1차', '반포 한강공원', 9, 15, 5000)]),
   };
 
-  void _stub() => MoishoToast.show(context, '준비 중인 화면이에요', tone: 'info');
+  void _openMeeting(MeetingItem m) => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => m.tag == '번개'
+              ? const FlashApplyScreen()
+              : MeetingDetailScreen(title: m.title, club: m.club),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -55,11 +64,11 @@ class _ShowFeedScreenState extends ConsumerState<ShowFeedScreen> {
     // 피드 순서: post, meeting1, post, meeting2, post, meeting3, post
     final feed = <Widget>[
       _postCard(_posts[0]),
-      MeetingCard(item: _meetings[1]!, onTap: _stub),
+      MeetingCard(item: _meetings[1]!, onTap: () => _openMeeting(_meetings[1]!)),
       _postCard(_posts[1]),
-      MeetingCard(item: _meetings[2]!, onTap: _stub),
+      MeetingCard(item: _meetings[2]!, onTap: () => _openMeeting(_meetings[2]!)),
       _postCard(_posts[2]),
-      MeetingCard(item: _meetings[3]!, onTap: _stub),
+      MeetingCard(item: _meetings[3]!, onTap: () => _openMeeting(_meetings[3]!)),
       _postCard(_posts[3]),
     ];
 
@@ -69,7 +78,7 @@ class _ShowFeedScreenState extends ConsumerState<ShowFeedScreen> {
         MoishoAppHeader(title: '쇼', actions: [
           MinTapTarget(
             const Icon(LucideIcons.squarePen, size: 22, color: T.accent),
-            onTap: _stub,
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ShowWriteScreen())),
           ),
         ]),
         Expanded(
@@ -143,7 +152,7 @@ class _ShowFeedScreenState extends ConsumerState<ShowFeedScreen> {
       child: MCard(
         radius: T.rXl,
         padding: const EdgeInsets.all(16),
-        onTap: _stub,
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PostDetailScreen())),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // 동아리 출처
           Container(

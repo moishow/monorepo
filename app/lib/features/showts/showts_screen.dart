@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/toast.dart';
+import 'showts_upload_screen.dart';
+import '../club/club_detail_screen.dart';
+import '../meeting/funding_detail_screen.dart';
 
 class _Funding {
   final bool active;
@@ -163,7 +166,7 @@ class _ShowtsScreenState extends State<ShowtsScreen> {
             // 업로드 버튼
             Positioned(
               top: 48 + top, right: 16,
-              child: _glassBtn(LucideIcons.plus, 36, 19, () => MoishoToast.show(context, '쇼츠 업로드는 준비 중이에요', tone: 'info')),
+              child: _glassBtn(LucideIcons.plus, 36, 19, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShowtsUploadScreen()))),
             ),
 
             // 중앙 재생 + 타이머
@@ -221,7 +224,7 @@ class _ShowtsScreenState extends State<ShowtsScreen> {
               child: Column(children: [
                 // 동아리 아바타 + 팔로우
                 GestureDetector(
-                  onTap: () => MoishoToast.show(context, '동아리 상세는 준비 중이에요', tone: 'info'),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClubDetailScreen())),
                   child: SizedBox(
                     width: 46, height: 56,
                     child: Stack(clipBehavior: Clip.none, alignment: Alignment.topCenter, children: [
@@ -250,7 +253,7 @@ class _ShowtsScreenState extends State<ShowtsScreen> {
                 // 펀딩 연동 / 가입
                 Column(children: [
                   GestureDetector(
-                    onTap: () => MoishoToast.show(context, fundingActive ? '펀딩 화면은 준비 중이에요' : '동아리 상세는 준비 중이에요', tone: 'info'),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => fundingActive ? const FundingDetailScreen() : const ClubDetailScreen())),
                     child: Container(
                       width: 46, height: 46,
                       decoration: BoxDecoration(
@@ -320,7 +323,7 @@ class _ShowtsScreenState extends State<ShowtsScreen> {
               Positioned(
                 bottom: 0, left: 0, right: 0, height: 58,
                 child: GestureDetector(
-                  onTap: () => MoishoToast.show(context, '펀딩 화면은 준비 중이에요', tone: 'info'),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FundingDetailScreen())),
                   child: Container(
                     decoration: const BoxDecoration(gradient: T.gradBrand),
                     child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
