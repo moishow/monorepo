@@ -36,7 +36,7 @@ class DepositConfirmScreen extends StatelessWidget {
     return _penaltyTiers.length - 1;
   }
 
-  int get _penalty => (_need * _penaltyTiers[_tierIdx].rate / 100).round(); // 정수 원 보장
+  int get _penalty => _need * _penaltyTiers[_tierIdx].rate ~/ 100; // 정수 나눗셈(§4 부동소수점 금지) — rate∈{0,50,100}은 100의 약수라 손실 없음
   int get _refund => _need - _penalty;
 
   void _confirm(BuildContext context) {

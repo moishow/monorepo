@@ -55,7 +55,7 @@ class _MeetingDetailScreenState extends State<MeetingDetailScreen> {
     return _penaltyTiers.length - 1;
   }
 
-  int get _penalty => (_myDeposit * _penaltyTiers[_tierIdx].rate / 100).round(); // 정수 원 보장
+  int get _penalty => _myDeposit * _penaltyTiers[_tierIdx].rate ~/ 100; // 정수 나눗셈(§4 부동소수점 금지) — rate∈{0,50,100}은 100의 약수라 손실 없음
   int get _refundAfterPenalty => _myDeposit - _penalty;
 
   bool get _isIn => _status == 'applied' || _status == 'deposited';
