@@ -1,5 +1,6 @@
 // 차수 예치 확인 — prototype DepositConfirmScreen (5b8ddc3c:228).
-// 예치할 포인트 hero(accent) + 분개(모임·차수·금액·보유에서 차감·부족분) + 안내 + 하단 CTA.
+// 예치 hero + 분개 + 시간별 취소 위약금 안내(결정1) + 하단 CTA.
+// 위약금 스케줄은 백엔드 정책이 정본 — 목업은 표시/시뮬만(money math는 백엔드 몫).
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/tokens.dart';
@@ -17,11 +18,31 @@ class DepositConfirmScreen extends StatelessWidget {
   static const String _meeting = '정기 합주 & 뒷풀이';
   static const String _rounds = '1차 · 2차';
 
+  // 시간별 취소 위약금 티어(결정1) — meeting_detail의 시트와 byte-identical 유지.
+  static const _penaltyTiers = [
+    (label: '신청 마감 ~ 24시간 전', fromHrs: 24, rate: 0),
+    (label: '24시간 ~ 6시간 전', fromHrs: 6, rate: 50),
+    (label: '6시간 전 ~ 만남 시각', fromHrs: 0, rate: 100),
+  ];
+  static const int _hrsToMeeting = 72; // 현재 시뮬 시점(만남까지 D-3) — 24h 이전 구간
+
   int get _short => (_need - _balance) > 0 ? (_need - _balance) : 0; // 부족분
   int get _fromPoint => _need - _short;
 
+  int get _tierIdx {
+    for (var i = 0; i < _penaltyTiers.length; i++) {
+      if (_hrsToMeeting >= _penaltyTiers[i].fromHrs) return i;
+    }
+    return _penaltyTiers.length - 1;
+  }
+
+  int get _penalty => (_need * _penaltyTiers[_tierIdx].rate / 100).round(); // 정수 원 보장
+  int get _refund => _need - _penalty;
+
   void _confirm(BuildContext context) {
-    MoishoToast.show(context, '${won(_need)}P를 예치했어요. 만남 시각 전까지 취소할 수 있어요.', tone: 'success');
+    // 결정1: '자유 취소' 제거 — 마감 24h 전 전액 환불, 이후 시간별 위약금 차감.
+    MoishoToast.show(context, '${won(_need)}P를 예치했어요. 마감 24시간 전까진 전액 환불, 이후엔 시간별 위약금이 차감돼요.',
+        tone: 'success');
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PaymentSuccessScreen()));
   }
 
@@ -59,20 +80,8 @@ class DepositConfirmScreen extends StatelessWidget {
               const SizedBox(height: 16),
               _breakdown(),
               const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(color: T.primarySoft, borderRadius: BorderRadius.circular(T.rMd)),
-                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Icon(LucideIcons.info, size: 15, color: T.primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '만남 시각 전까지 자유롭게 취소하면 즉시 환불돼요. 만남 시각이 지나면 예치가 잠겨요.',
-                      style: tx(12, FontWeight.w500, T.primary, height: 1.5),
-                    ),
-                  ),
-                ]),
-              ),
+              const SectionLabel('취소 위약금 안내'),
+              _penaltyCard(),
             ],
           ),
         ),
@@ -119,6 +128,97 @@ class DepositConfirmScreen extends StatelessWidget {
       ]),
     );
   }
+
+  // ── 취소 위약금 안내(시간별 티어 + 환불 예상 + 공동비용 충당) ──
+  Widget _penaltyCard() => MCard(
+        elevation: 'flat',
+        radius: T.rXl,
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Icon(LucideIcons.clock, size: 16, color: T.textBody),
+            const SizedBox(width: 8),
+            Text('취소 시점별 위약금', style: tx(13, FontWeight.w700, T.textStrong, height: 1)),
+            const Spacer(),
+            MBadge(_penalty == 0 ? '지금 취소 시 위약금 0' : '지금 ${_penaltyTiers[_tierIdx].rate}%',
+                tone: _penalty == 0 ? 'success' : 'warning', variant: 'soft'),
+          ]),
+          const SizedBox(height: 6),
+          Text('신청 마감 후 남은 시간에 따라 위약금이 달라져요. 마감 24시간 전까진 전액 환불돼요.',
+              style: tx(12, FontWeight.w500, T.textMuted, height: 1.45)),
+          const SizedBox(height: 12),
+          for (var i = 0; i < _penaltyTiers.length; i++) _tierRow(i),
+          const SizedBox(height: 4),
+          // 환불 예상(예치 − 위약금)
+          Container(
+            padding: const EdgeInsets.only(top: 12),
+            decoration: const _DashedTopBorder(color: T.borderDefault, width: 1.5),
+            child: Column(children: [
+              _calcRow('예치 금액', '${won(_need)}P', T.textTitle),
+              const SizedBox(height: 8),
+              _calcRow('위약금 (현재 ${_penaltyTiers[_tierIdx].rate}%)', '−${won(_penalty)}P',
+                  _penalty == 0 ? T.textMuted : T.danger),
+              const SizedBox(height: 10),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Text('환불 예상액', style: tx(14, FontWeight.w700, T.textTitle, height: 1)),
+                Text('${won(_refund)}P', style: tx(18, FontWeight.w700, T.primary, height: 1, tab: true)),
+              ]),
+            ]),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(color: T.surfaceSunken, borderRadius: BorderRadius.circular(T.rMd)),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Icon(LucideIcons.users, size: 14, color: T.textMuted),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('위약금은 남은 부원들의 그룹 공동비용에 충당돼요. 플랫폼·총무에 귀속되지 않아요(0원).',
+                    style: tx(12, FontWeight.w500, T.textBody, height: 1.45)),
+              ),
+            ]),
+          ),
+        ]),
+      );
+
+  // ── 위약금 티어 한 줄(현재 구간 하이라이트) ──
+  Widget _tierRow(int i) {
+    final t = _penaltyTiers[i];
+    final isCurrent = i == _tierIdx;
+    final rateColor = t.rate == 0
+        ? T.successStrong
+        : t.rate == 100
+            ? T.danger
+            : T.amber600;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isCurrent ? T.primarySoft : T.surfaceSunken,
+        borderRadius: BorderRadius.circular(T.rMd),
+        border: isCurrent ? Border.all(color: T.primary, width: 1.5) : null,
+      ),
+      child: Row(children: [
+        if (isCurrent) ...[
+          const Icon(LucideIcons.arrowRight, size: 13, color: T.primary),
+          const SizedBox(width: 6),
+        ],
+        Expanded(
+          child: Text(t.label,
+              style: tx(13, isCurrent ? FontWeight.w700 : FontWeight.w500, isCurrent ? T.textStrong : T.textBody, height: 1.2)),
+        ),
+        Text('위약금 ${t.rate}%', style: tx(13, FontWeight.w700, rateColor, height: 1, tab: true)),
+      ]),
+    );
+  }
+
+  Widget _calcRow(String label, String value, Color valueColor) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: tx(13, FontWeight.w500, T.textMuted, height: 1)),
+          Text(value, style: tx(14, FontWeight.w600, valueColor, height: 1, tab: true)),
+        ],
+      );
 
   // ── 하단 CTA ──
   Widget _cta(BuildContext context) {
