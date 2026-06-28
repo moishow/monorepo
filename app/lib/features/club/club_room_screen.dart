@@ -8,6 +8,7 @@ import '../../core/widgets/primitives.dart';
 import '../../core/widgets/toast.dart';
 import 'club_detail_screen.dart';
 import 'member_approval_screen.dart';
+import 'guest_match_admin_screen.dart';
 import 'club_finance_screen.dart';
 import '../meeting/create_meeting_screen.dart';
 import '../meeting/meeting_apply_screen.dart';
@@ -321,9 +322,15 @@ class _ClubRoomScreenState extends State<ClubRoomScreen> {
               ))),
         ]),
         const SizedBox(height: 10),
-        _dashedAction(LucideIcons.wallet, '장부 · 재정 관리', () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ClubFinanceScreen()),
-            )),
+        Row(children: [
+          Expanded(child: _dashedAction(LucideIcons.wallet, '장부 · 재정 관리', () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ClubFinanceScreen()),
+              ))),
+          const SizedBox(width: 10),
+          Expanded(child: _dashedAction(LucideIcons.calendarCheck, '게스트 매칭', () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const GuestMatchAdminScreen()),
+              ))),
+        ]),
         if (_isTreasurer) ...[
           const SizedBox(height: 10),
           Container(

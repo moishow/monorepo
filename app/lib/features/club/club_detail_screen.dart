@@ -13,6 +13,7 @@ import '../../core/widgets/toast.dart';
 import '../social/public_profile_screen.dart';
 import 'club_room_screen.dart';
 import 'club_join_apply_screen.dart';
+import 'guest_apply_screen.dart';
 
 // ── 멤버 사진 (프로토타입 MEMBER_PHOTOS) ──
 const Map<String, String> _memberPhotos = {
@@ -99,6 +100,10 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
 
   void _toJoinApply() =>
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClubJoinApplyScreen()));
+
+  // F2-1 진입 — 게스트 번개 매칭(allowGuestFlash) 동아리의 비회원 체험 신청.
+  void _toGuestApply() =>
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const GuestApplyScreen()));
 
   void _sendChat() {
     final text = _chatCtrl.text.trim();
@@ -313,7 +318,20 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
       ),
       if (!_isMember)
         StickyBar(
-          child: MButton('가입 신청서 제출하기', variant: 'primary', size: 'lg', block: true, onTap: _toJoinApply),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            MButton('가입 신청서 제출하기', variant: 'primary', size: 'lg', block: true, onTap: _toJoinApply),
+            const SizedBox(height: 8),
+            // 데모 단일 클럽이라 allowGuestFlash 데이터가 흐르지 않아 상시 노출(의도된 동작).
+            // 실연동 시 club.allowGuestFlash 가드로 감쌀 것(F2 수락기준 ①).
+            MButton(
+              '게스트로 체험 먼저 해보기',
+              variant: 'secondary',
+              size: 'md',
+              block: true,
+              leadingIcon: const Icon(LucideIcons.zap, size: 16, color: T.primary),
+              onTap: _toGuestApply,
+            ),
+          ]),
         ),
     ]);
   }

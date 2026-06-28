@@ -6,6 +6,7 @@ import '../../core/theme/tokens.dart';
 import '../chat/dm_list_screen.dart';
 import '../../core/widgets/chrome.dart';
 import '../../core/widgets/primitives.dart';
+import '../../core/widgets/toast.dart';
 import '../social/public_profile_screen.dart';
 import 'club_form_builder_screen.dart';
 
@@ -16,6 +17,8 @@ class _Applicant {
   final String note, applied;
   final double temp;
   final List<(String, String)> answers;
+  // 번개 게스트 신호 — 모두 서버 제공값(클라 계산 금지, 07 §2-3). 가입 승인과 정산은 직교.
+  final bool isGuest, trialVerified, noshow;
   String status = 'pending'; // pending | approved | rejected
   _Applicant({
     required this.name,
@@ -25,6 +28,9 @@ class _Applicant {
     required this.applied,
     required this.temp,
     required this.answers,
+    this.isGuest = false,
+    this.trialVerified = false,
+    this.noshow = false,
   });
 }
 
@@ -42,8 +48,25 @@ class MemberApprovalScreen extends StatefulWidget {
 
 class _MemberApprovalScreenState extends State<MemberApprovalScreen> {
   int? _selIdx;
+  bool _clubFull = false; // 데모: 정원 가득(409 CLUB_FULL 가드 시연)
 
   final List<_Applicant> _items = [
+    _Applicant(
+      name: '김지망',
+      age: 23,
+      tags: const ['게스트', '보컬'],
+      note: '체험 번개 참석 완료! 정식으로 가입하고 싶어요.',
+      applied: '1일 전',
+      temp: 36.5,
+      isGuest: true,
+      trialVerified: true,
+      noshow: false,
+      answers: const [
+        ('번개 체험 결과', '7/5 게스트 환영 번개 참석 · 노쇼 없음 (서버 검증 신호)'),
+        ('지원 동기', '직접 합주해보니 분위기가 좋아서 정식으로 함께하고 싶어요.'),
+        ('다룰 수 있는 악기', '보컬, 통기타 3년'),
+      ],
+    ),
     _Applicant(
       name: '홍길동',
       age: 24,
@@ -81,8 +104,33 @@ class _MemberApprovalScreenState extends State<MemberApprovalScreen> {
 
   void _act(int i, String status) => setState(() => _items[i].status = status);
 
+  // 가입 승인 — 게스트는 정원 가드 통과해야 함(409 CLUB_FULL). 정산과는 무관(직교).
+  bool _approve(int i) {
+    final it = _items[i];
+    if (it.isGuest && _clubFull) {
+      MoishoToast.show(context, '정원이 가득 찼어요. 빈자리가 생기면 다시 승인할 수 있어요.',
+          tone: 'danger', title: '정원 초과 (CLUB_FULL)');
+      return false;
+    }
+    _act(i, 'approved');
+    MoishoToast.show(context, it.isGuest ? '게스트가 정식 부원이 됐어요 🎉' : '가입을 승인했어요.', tone: 'success');
+    return true;
+  }
+
   void _openProfile(String name) => Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => PublicProfileScreen(name: name)),
+      );
+
+  // 번개 출석/노쇼 — 서버 검증 신호를 그대로 노출(클라 계산 금지).
+  Widget _serverSignalChip(_Applicant it) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(color: T.gray50, borderRadius: BorderRadius.circular(T.rPill)),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(LucideIcons.shieldCheck, size: 10, color: T.textMuted),
+          const SizedBox(width: 3),
+          Text('출석 ✓ · ${it.noshow ? '노쇼 있음' : '노쇼 없음'}',
+              style: tx(10.5, FontWeight.w600, T.textMuted, height: 1)),
+        ]),
       );
 
   @override
@@ -135,7 +183,8 @@ class _MemberApprovalScreenState extends State<MemberApprovalScreen> {
                     ),
                   ]),
                   const SizedBox(height: 14),
-                  Wrap(spacing: 6, runSpacing: 6, children: [
+                  Wrap(spacing: 6, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
+                    if (it.isGuest) const MBadge('번개 검증 완료', tone: 'success', variant: 'soft'),
                     for (final t in it.tags) MTag(t, tone: 'blue', leadingHash: true),
                   ]),
                   const SizedBox(height: 14),
@@ -235,8 +284,7 @@ class _MemberApprovalScreenState extends State<MemberApprovalScreen> {
               child: MButton('승인', variant: 'success', size: 'lg', block: true,
                   leadingIcon: const Icon(LucideIcons.check, size: 18, color: T.white),
                   onTap: () {
-                    _act(_selIdx!, 'approved');
-                    setState(() => _selIdx = null);
+                    if (_approve(_selIdx!)) setState(() => _selIdx = null);
                   }),
             ),
           ]),
@@ -298,7 +346,23 @@ class _MemberApprovalScreenState extends State<MemberApprovalScreen> {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-                    child: MBadge('대기 중 $pendingCount건', tone: 'danger', variant: 'soft'),
+                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      MBadge('대기 중 $pendingCount건', tone: 'danger', variant: 'soft'),
+                      GestureDetector(
+                        onTap: () => setState(() => _clubFull = !_clubFull),
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: _clubFull ? T.dangerSoft : T.gray50,
+                            borderRadius: BorderRadius.circular(T.rPill),
+                            border: Border.all(color: _clubFull ? T.danger : T.borderSubtle),
+                          ),
+                          child: Text(_clubFull ? '정원 가득 ✓' : '정원 가득(데모)',
+                              style: tx(10.5, FontWeight.w600, _clubFull ? T.dangerStrong : T.textMuted, height: 1)),
+                        ),
+                      ),
+                    ]),
                   ),
                   for (var i = 0; i < _items.length; i++) _applicantRow(i, _items[i]),
                 ]),
@@ -330,6 +394,13 @@ class _MemberApprovalScreenState extends State<MemberApprovalScreen> {
                   Wrap(spacing: 6, runSpacing: 6, children: [
                     for (final t in item.tags) MTag(t, tone: 'blue', leadingHash: true),
                   ]),
+                  if (item.isGuest) ...[
+                    const SizedBox(height: 6),
+                    Wrap(spacing: 6, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
+                      const MBadge('번개 검증 완료', tone: 'success', variant: 'soft'),
+                      _serverSignalChip(item),
+                    ]),
+                  ],
                 ]),
               ),
               const SizedBox(width: 8),
@@ -359,13 +430,24 @@ class _MemberApprovalScreenState extends State<MemberApprovalScreen> {
               ),
             ),
           ),
+          if (item.isGuest) ...[
+            const SizedBox(height: 8),
+            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Icon(LucideIcons.info, size: 11, color: T.textDisabled),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text('번개 정산은 가입 승인과 별개로 진행돼요.',
+                    style: tx(10.5, FontWeight.w500, T.textDisabled, height: 1.3)),
+              ),
+            ]),
+          ],
           if (item.status == 'pending') ...[
             const SizedBox(height: 10),
             Row(children: [
               Expanded(
                 child: MButton('승인', variant: 'success', size: 'sm', block: true,
                     leadingIcon: const Icon(LucideIcons.check, size: 16, color: T.white),
-                    onTap: () => _act(i, 'approved')),
+                    onTap: () => _approve(i)),
               ),
               const SizedBox(width: 8),
               Expanded(
