@@ -1,5 +1,7 @@
-// 총무 출금(현금화) — LOCKED 이후·전원 동의 게이트 — prototype TreasurerPayoutScreen (5b8ddc3c:300).
-// LOCKED hero · 출금 동의 현황(아바타 리스트+게이지) · 정산 타이머 · OCR 안내 · 데모 동의 처리 · 하단 출금 CTA.
+// 총무 출금(현금화) — LOCKED 이후 — prototype TreasurerPayoutScreen (5b8ddc3c:300).
+// 결정1(시간별 위약금 + 전액출금): 출금은 동의에 막히지 않음. "출금 동의받기"=5분 투명성
+// 수집 알림(미응답=위약금 부담 노쇼), 출금 CTA는 항상 전액 가능.
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/tokens.dart';
@@ -26,8 +28,9 @@ class TreasurerPayoutScreen extends StatefulWidget {
 
 class _TreasurerPayoutScreenState extends State<TreasurerPayoutScreen> {
   static const int _pooled = 480000;
-  // 락 시점 스냅샷: 이 시점에 예치한 부원 전원의 동의가 모여야 출금 가능
+  // 락 시점 스냅샷: 이 시점에 예치한 부원 명단(투명성 동의 분모) — 출금 게이트가 아님.
   static const String _lockedAt = '2026.06.22 21:00';
+  static const int _windowSec = 300; // 출금 동의 수집 5분 창(클라 표시·서버시계 흉내)
 
   List<_Member> _members = const [
     _Member('김회장', true, '21:04'),
@@ -40,17 +43,64 @@ class _TreasurerPayoutScreenState extends State<TreasurerPayoutScreen> {
     _Member('한바름', true, '오늘 08:30'),
   ];
 
+  bool _requested = false; // 출금 동의받기 발송 여부
+  bool _closed = false; // 5분 창 마감 여부
+  int _remaining = _windowSec;
+  Timer? _timer;
+
   int get _agreed => _members.where((m) => m.consented).length;
   int get _total => _members.length;
   bool get _allAgreed => _agreed == _total;
   double get _pct => (_agreed / _total * 100).roundToDouble();
 
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _clock(int s) {
+    final m = (s ~/ 60).toString().padLeft(2, '0');
+    final r = (s % 60).toString().padLeft(2, '0');
+    return '$m:$r';
+  }
+
+  // 출금 동의받기 = 5분 투명성 수집 알림 발송(출금을 막지 않음).
   void _requestConsent() {
+    if (_requested) return;
+    setState(() => _requested = true);
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+      if (_remaining <= 1) {
+        _closeWindow();
+      } else {
+        setState(() => _remaining -= 1);
+      }
+    });
     MoishoToast.show(
       context,
-      '미동의 ${_total - _agreed}명에게 출금 동의 요청을 보냈어요.',
+      '미동의 ${_total - _agreed}명에게 출금 동의 요청을 보냈어요. 5분 후 자동 마감돼요.',
       tone: 'info',
       title: '동의 요청 발송',
+    );
+  }
+
+  void _closeWindow() {
+    if (_closed) return;
+    _timer?.cancel();
+    final noResp = _total - _agreed;
+    setState(() {
+      _remaining = 0;
+      _closed = true;
+    });
+    // 결정1-③/⑤: 미응답=위약금 부담 노쇼. 출금은 동의와 무관하게 전액 가능.
+    MoishoToast.show(
+      context,
+      noResp > 0
+          ? '동의 마감 — 미응답 $noResp명은 위약금 부담(노쇼)으로 기록됐어요. 전액 출금할 수 있어요.'
+          : '동의 마감 — 전원 응답 완료. 전액 출금할 수 있어요.',
+      tone: 'neutral',
+      title: '동의 마감',
     );
   }
 
@@ -61,9 +111,11 @@ class _TreasurerPayoutScreenState extends State<TreasurerPayoutScreen> {
   }
 
   void _payout() {
+    _timer?.cancel();
+    // 결정1-⑤: PAYOUT = 에스크로 전액(무응답자 몫도 위약금 부담으로 포함). "전원 동의" 게이트 없음.
     MoishoToast.show(
       context,
-      '전원 동의 완료 · ${won(_pooled)}원이 계좌로 이체됐어요.',
+      '${won(_pooled)}원 전액이 계좌로 이체됐어요. 영수증·잔액 반납 타이머가 시작돼요.',
       tone: 'success',
       title: '출금 완료',
     );
@@ -83,7 +135,7 @@ class _TreasurerPayoutScreenState extends State<TreasurerPayoutScreen> {
             children: [
               _hero(),
               const SizedBox(height: 16),
-              _consentGate(),
+              _consentPanel(),
               const SizedBox(height: 16),
               _settleTimer(),
               const SizedBox(height: 16),
@@ -133,8 +185,8 @@ class _TreasurerPayoutScreenState extends State<TreasurerPayoutScreen> {
         ),
       );
 
-  // ── 출금 동의 게이트 ──
-  Widget _consentGate() {
+  // ── 출금 동의 현황(투명성 수집 — 출금 게이트 아님) ──
+  Widget _consentPanel() {
     return MCard(
       elevation: 'raised',
       radius: T.rXl,
@@ -162,35 +214,20 @@ class _TreasurerPayoutScreenState extends State<TreasurerPayoutScreen> {
               ),
               TextSpan(text: '$_lockedAt 락 시점에 예치한 '),
               TextSpan(text: '$_total명', style: tx(11.5, FontWeight.w700, T.textMuted, height: 1.4)),
-              const TextSpan(text: ' 전원이 동의해야 출금할 수 있어요.'),
+              const TextSpan(text: '에게 정산 투명성 동의를 받아요. 동의는 출금 조건이 아니에요 — 미응답·거절은 위약금 부담 노쇼로 기록돼요.'),
             ]),
           ),
         ),
         ProgressBar(value: _pct, height: 12, tone: _allAgreed ? 'success' : 'primary'),
         const SizedBox(height: 14),
         for (var i = 0; i < _members.length; i++) _memberRow(_members[i], i == 0),
-        if (!_allAgreed) ...[
-          const SizedBox(height: 12),
-          GestureDetector(
-            onTap: _requestConsent,
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              height: 42,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: T.primarySoft,
-                borderRadius: BorderRadius.circular(T.rMd),
-                border: Border.all(color: T.primary, width: 1.5),
-              ),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(LucideIcons.bell, size: 14, color: T.primary),
-                const SizedBox(width: 6),
-                Text('미동의 ${_total - _agreed}명에게 동의 요청 보내기',
-                    style: tx(13, FontWeight.w700, T.primary, height: 1)),
-              ]),
-            ),
-          ),
-        ],
+        const SizedBox(height: 12),
+        if (!_requested)
+          _requestButton()
+        else if (!_closed)
+          _countdownRow()
+        else
+          _closedNote(),
       ]),
     );
   }
@@ -209,9 +246,76 @@ class _TreasurerPayoutScreenState extends State<TreasurerPayoutScreen> {
             const SizedBox(width: 4),
             const MBadge('동의', tone: 'success', variant: 'soft'),
           ] else
-            const MBadge('대기', tone: 'neutral', variant: 'soft'),
+            MBadge(_closed ? '노쇼' : '대기', tone: _closed ? 'warning' : 'neutral', variant: 'soft'),
         ]),
       );
+
+  // ── 출금 동의받기(5분 알림 발송) ──
+  Widget _requestButton() => GestureDetector(
+        onTap: _requestConsent,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          height: 44,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: T.primarySoft,
+            borderRadius: BorderRadius.circular(T.rMd),
+            border: Border.all(color: T.primary, width: 1.5),
+          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(LucideIcons.bellRing, size: 15, color: T.primary),
+            const SizedBox(width: 6),
+            Text('출금 동의받기 · 미동의 ${_total - _agreed}명에게 5분 알림',
+                style: tx(13, FontWeight.w700, T.primary, height: 1)),
+          ]),
+        ),
+      );
+
+  // ── 5분 수집 카운트다운 ──
+  Widget _countdownRow() {
+    final pct = (_remaining / _windowSec * 100).clamp(0, 100).toDouble();
+    final urgent = _remaining <= 60;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(color: T.primarySoft, borderRadius: BorderRadius.circular(T.rMd)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(LucideIcons.clock, size: 15, color: urgent ? T.danger : T.primary),
+          const SizedBox(width: 8),
+          Text('동의 수집 마감까지', style: tx(12.5, FontWeight.w600, T.textBody, height: 1)),
+          const Spacer(),
+          Text(_clock(_remaining),
+              style: tx(18, FontWeight.w800, urgent ? T.danger : T.textStrong, height: 1, tab: true)),
+        ]),
+        const SizedBox(height: 10),
+        ProgressBar(value: pct, height: 6, tone: urgent ? 'accent' : 'primary'),
+        const SizedBox(height: 8),
+        Text('미응답은 위약금 부담 노쇼로 기록돼요. 출금은 지금도 전액 가능해요.',
+            style: tx(11.5, FontWeight.w500, T.textMuted, height: 1.4)),
+      ]),
+    );
+  }
+
+  // ── 동의 마감 안내 ──
+  Widget _closedNote() {
+    final noResp = _total - _agreed;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(color: T.surfaceSunken, borderRadius: BorderRadius.circular(T.rMd)),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Icon(LucideIcons.circleCheck, size: 15, color: T.textBody),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            noResp > 0
+                ? '동의 수집 마감 · 전액 출금 가능 (미응답 $noResp명 위약금 부담 노쇼)'
+                : '동의 수집 마감 · 전원 응답 · 전액 출금 가능',
+            style: tx(12, FontWeight.w600, T.textBody, height: 1.4),
+          ),
+        ),
+      ]),
+    );
+  }
 
   // ── 정산 타이머 ──
   Widget _settleTimer() => MCard(
@@ -267,20 +371,13 @@ class _TreasurerPayoutScreenState extends State<TreasurerPayoutScreen> {
         ),
       );
 
-  // ── 하단 CTA ──
+  // ── 하단 CTA(전액 출금 — 동의에 막히지 않음) ──
   Widget _cta() => StickyBar(
-        child: _allAgreed
-            ? MButton('전원 동의 완료 · ${won(_pooled)}원 출금',
-                variant: 'primary',
-                size: 'lg',
-                block: true,
-                leadingIcon: const Icon(LucideIcons.banknote, size: 18, color: T.white),
-                onTap: _payout)
-            : MButton('출금 동의 대기 중 · $_agreed/$_total명',
-                variant: 'secondary',
-                size: 'lg',
-                block: true,
-                disabled: true,
-                leadingIcon: const Icon(LucideIcons.lock, size: 17, color: T.primary)),
+        child: MButton('전액 출금 · ${won(_pooled)}원',
+            variant: 'primary',
+            size: 'lg',
+            block: true,
+            leadingIcon: const Icon(LucideIcons.banknote, size: 18, color: T.white),
+            onTap: _payout),
       );
 }

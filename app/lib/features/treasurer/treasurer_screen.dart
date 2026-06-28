@@ -128,7 +128,7 @@ class TreasurerScreen extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '참석 신청 시 보유 포인트 차감 + 부족분만 충전해 예치돼요. 마감 전 취소 시 100% 환불.',
+              '참석 신청 시 보유 포인트 차감 + 부족분만 충전해 예치돼요. 신청 마감 전엔 100% 환불, 이후엔 시간별 취소 위약금이 적용돼요.',
               style: tx(12, FontWeight.w500, T.textBody, height: 1.5),
             ),
           ),
