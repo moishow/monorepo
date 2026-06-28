@@ -84,6 +84,16 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
   DateTime _dlDate = DateTime(2026, 6, 14);
   String _dlTime = '18:00';
 
+  // ── F1 신규 ──
+  // F1a 게스트 번개 매칭 신청받기
+  bool _allowGuestFlash = false;
+  // F1b 출금 가능 시각 (만남시각 이후로만, 기본=만남시각)
+  bool _woOpen = false;
+  DateTime _woDate = DateTime(2026, 6, 15);
+  String _woTime = '18:00';
+  // F1c 장소 지도 링크 (https만)
+  final _mapCtrl = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -97,6 +107,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
   void dispose() {
     _nameCtrl.dispose();
     _placeCtrl.dispose();
+    _mapCtrl.dispose();
     _descCtrl.dispose();
     _minCtrl.dispose();
     _headCtrl.dispose();
@@ -126,9 +137,93 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
   }
 
   void _submit() {
+    final map = _mapCtrl.text.trim();
+    if (map.isNotEmpty && !map.startsWith('https://')) {
+      MoishoToast.show(context, '지도 링크는 https:// 주소만 넣을 수 있어요', tone: 'danger', title: '링크 확인');
+      return;
+    }
     MoishoToast.show(context, '부원들에게 펀딩 알림을 발송했어요.', tone: 'success', title: '모임 개설 완료! 🎉');
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ClubRoomScreen()));
   }
+
+  // F1b — 날짜+시간을 DateTime으로 합쳐 비교(출금시각 ≥ 만남시각 검증용).
+  DateTime _combine(DateTime d, String time) {
+    final p = time.split(':');
+    return DateTime(d.year, d.month, d.day, int.tryParse(p.first) ?? 0, int.tryParse(p.last) ?? 0);
+  }
+
+  void _confirmWithdraw() {
+    if (_combine(_woDate, _woTime).isBefore(_combine(_mtDate, _mtTime))) {
+      MoishoToast.show(context, '만남 시각 이후로만 설정할 수 있어요', tone: 'danger', title: '출금 시각 확인');
+      setState(() {
+        _woDate = _mtDate;
+        _woTime = _mtTime;
+      });
+      return;
+    }
+    setState(() => _woOpen = false);
+  }
+
+  // F1c — 장소 지도 링크 입력 (https는 _submit에서 검증)
+  Widget _mapLinkField() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('지도 링크 (선택)', style: tx(13, FontWeight.w600, T.textTitle, height: 1)),
+        const SizedBox(height: 8),
+        Container(
+          height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: T.white,
+            borderRadius: BorderRadius.circular(T.rMd),
+            border: Border.all(color: T.borderDefault, width: 1.5),
+          ),
+          child: Row(children: [
+            const Icon(LucideIcons.mapPin, size: 18, color: T.textMuted),
+            const SizedBox(width: 10),
+            Expanded(
+              child: TextField(
+                controller: _mapCtrl,
+                keyboardType: TextInputType.url,
+                cursorColor: T.primary,
+                style: tx(14, FontWeight.w500, T.textStrong, height: 1),
+                decoration: InputDecoration(
+                  isCollapsed: true,
+                  border: InputBorder.none,
+                  hintText: 'https:// 지도 주소 붙여넣기',
+                  hintStyle: tx(14, FontWeight.w500, T.textDisabled, height: 1),
+                ),
+              ),
+            ),
+          ]),
+        ),
+      ]);
+
+  // F1a — 게스트 번개 매칭 신청받기 토글
+  Widget _guestToggleCard() => Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: T.surfaceSunken, borderRadius: BorderRadius.circular(T.rXl)),
+        child: Row(children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: T.primarySoft, borderRadius: BorderRadius.circular(T.rMd)),
+            child: const Icon(LucideIcons.userPlus, size: 18, color: T.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('게스트 번개 매칭 신청받기', style: tx(14, FontWeight.w700, T.textTitle, height: 1.2)),
+              const SizedBox(height: 3),
+              Text('외부인이 체험 참여를 신청할 수 있어요', style: tx(12, FontWeight.w500, T.textMuted, height: 1.3)),
+            ]),
+          ),
+          Switch(
+            value: _allowGuestFlash,
+            activeThumbColor: T.primary,
+            onChanged: (v) => setState(() => _allowGuestFlash = v),
+          ),
+        ]),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -152,11 +247,15 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
               const SizedBox(height: 20),
               _pad(_labeledField('장소', _placeCtrl, hint: '모임 장소를 입력하세요', height: 48)),
               const SizedBox(height: 20),
+              _pad(_mapLinkField()),
+              const SizedBox(height: 20),
               _pad(_descSection()),
               const SizedBox(height: 20),
               _pad(_costSection()),
               const SizedBox(height: 20),
               _pad(_fundingCard()),
+              const SizedBox(height: 20),
+              _pad(_guestToggleCard()),
             ],
           ),
         ),
@@ -284,7 +383,14 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
             time: _mtTime,
             onDate: (d) => setState(() => _mtDate = d),
             onTime: (t) => setState(() => _mtTime = t),
-            onConfirm: () => setState(() => _mtOpen = false),
+            onConfirm: () => setState(() {
+              _mtOpen = false;
+              // 만남시각이 출금시각보다 늦어지면 출금시각을 만남시각으로 끌어올림(F1b 불변식)
+              if (_combine(_woDate, _woTime).isBefore(_combine(_mtDate, _mtTime))) {
+                _woDate = _mtDate;
+                _woTime = _mtTime;
+              }
+            }),
           ),
       ]);
 
@@ -519,6 +625,25 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                 _quickChip('3일 후', 3, '18:00'),
                 _quickChip('일주일 후', 7, '18:00'),
               ],
+            ),
+          const SizedBox(height: 14),
+          Text('출금 가능 시각', style: tx(13, FontWeight.w600, T.textTitle, height: 1)),
+          const SizedBox(height: 4),
+          Text('만남 시각 이후로만 설정할 수 있어요 (그 전엔 출금이 잠겨요)',
+              style: tx(11, FontWeight.w500, T.textMuted, height: 1.3)),
+          const SizedBox(height: 6),
+          _pickerTrigger(
+            open: _woOpen,
+            label: _fmtDT(_woDate, _woTime),
+            onTap: () => setState(() => _woOpen = !_woOpen),
+          ),
+          if (_woOpen)
+            _pickerPanel(
+              date: _woDate,
+              time: _woTime,
+              onDate: (d) => setState(() => _woDate = d),
+              onTime: (t) => setState(() => _woTime = t),
+              onConfirm: _confirmWithdraw,
             ),
         ]),
       );
