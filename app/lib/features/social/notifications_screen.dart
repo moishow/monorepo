@@ -19,7 +19,10 @@ class _Notif {
   bool unread;
   final String time, title, body;
   final String? action;
-  _Notif(this.id, this.icon, this.tone, this.unread, this.time, this.title, this.body, this.action);
+  final bool actionable; // 인라인 동의/거절 액션(진입 없이)
+  String? resolved; // null | 'agreed' | 'rejected' (인라인 응답 후 설정)
+  _Notif(this.id, this.icon, this.tone, this.unread, this.time, this.title, this.body, this.action,
+      {this.actionable = false});
 }
 
 class _Upcoming {
@@ -39,7 +42,8 @@ class NotificationsScreen extends StatefulWidget {
 class _NotificationsScreenState extends State<NotificationsScreen> {
   final List<_Notif> _items = [
     _Notif(0, LucideIcons.shieldQuestion, T.primary, true, '방금 전', '총무 출금 동의 요청',
-        '정기 합주 & 뒷풀이 — 총무가 480,000원 출금에 동의를 요청했어요. 전원 동의 시 출금돼요.', 'payoutConsent'),
+        '정기 합주 & 뒷풀이 — 총무가 480,000원 출금 동의를 요청했어요. 동의는 정산 투명성 확인이에요 (거절·무응답도 출금은 진행).', 'payoutConsent',
+        actionable: true),
     _Notif(1, LucideIcons.handCoins, T.primary, true, '방금 전', '펀딩 마감 임박!',
         '정기 대관 연습 펀딩이 23시간 후 마감돼요.', 'fundingDetail'),
     _Notif(2, LucideIcons.checkCircle, T.success, true, '1시간 전', '입금 확인 완료!',
@@ -83,6 +87,56 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       default:
         MoishoToast.show(context, '준비 중', tone: 'info');
     }
+  }
+
+  // 인라인 동의/거절(진입 없이) — 결정1: 동의=투명성 확인 / 거절=이의 기록(출금 안 막음). F3-4와 동일 프레이밍.
+  void _resolveConsent(_Notif n, bool agreed) {
+    setState(() {
+      n.unread = false;
+      n.resolved = agreed ? 'agreed' : 'rejected';
+    });
+    if (agreed) {
+      MoishoToast.show(context, '정산 내역을 확인했어요. 출금 내역은 영수증 증빙으로 공개돼요.', tone: 'success', title: '동의 완료');
+    } else {
+      MoishoToast.show(context, '이의가 기록됐어요. 출금은 예정대로 진행돼요.', tone: 'info', title: '이의 기록');
+    }
+  }
+
+  // 알림 행 인라인 액션(미해결: 동의/거절 버튼 · 해결: 결과 칩)
+  Widget _consentAction(_Notif n) {
+    if (n.resolved != null) {
+      final agreed = n.resolved == 'agreed';
+      return Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            color: agreed ? T.successSoft : T.warningSoft,
+            borderRadius: BorderRadius.circular(T.rMd),
+          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(agreed ? LucideIcons.circleCheck : LucideIcons.flag, size: 14, color: agreed ? T.successStrong : T.amber600),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(agreed ? '동의함 · 정산 투명성 확인' : '이의 기록됨 · 출금은 진행',
+                  style: tx(12, FontWeight.w600, agreed ? T.successStrong : T.amber600, height: 1.2)),
+            ),
+          ]),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(children: [
+        Expanded(
+          child: MButton('거절', variant: 'secondary', size: 'sm', block: true, onTap: () => _resolveConsent(n, false)),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: MButton('동의', variant: 'primary', size: 'sm', block: true, onTap: () => _resolveConsent(n, true)),
+        ),
+      ]),
+    );
   }
 
   void _openMeeting() =>
@@ -220,6 +274,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ]),
               const SizedBox(height: 3),
               Text(n.body, style: tx(13, FontWeight.w500, T.textBody, height: 1.4)),
+              if (n.actionable) _consentAction(n),
             ]),
           ),
           if (n.unread) ...[
