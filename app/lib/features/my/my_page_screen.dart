@@ -9,8 +9,15 @@ import '../../core/data/session.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/chrome.dart';
 import '../../core/widgets/primitives.dart';
-import '../../core/widgets/toast.dart';
 import '../auth/auth_dialogs.dart';
+import '../club/club_home_screen.dart';
+import '../club/create_club_screen.dart';
+import '../home/post_detail_screen.dart';
+import '../social/follow_list_screen.dart';
+import '../social/profile_edit_screen.dart';
+import '../social/settings_screen.dart';
+import '../treasurer/treasurer_meetings_screen.dart';
+import '../wallet/wallet_screen.dart';
 
 // 매너온도 → 히어로 배경 / 강조색
 LinearGradient _mannerHero(double t) {
@@ -72,10 +79,14 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
   static const _temp = 37.8; // 매너온도 showcase (서버 산출 연동은 journey-06)
 
-  void _stub() => MoishoToast.show(context, '준비 중인 화면이에요', tone: 'info');
+  void _push(Widget screen) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 
-  // 미인증 → 지갑 개설(KYC 게이트). 성공 시 세션 flip 으로 카드가 리렌더.
+  // verified → 지갑 화면. 미인증 → 지갑 개설(KYC 게이트). 성공 시 세션 flip 으로 카드가 리렌더.
   Future<void> _openWallet() async {
+    if (ref.read(sessionProvider).verified) {
+      _push(const WalletScreen());
+      return;
+    }
     await ensureVerified(context, ref, action: '포인트 지갑');
   }
 
@@ -118,7 +129,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         // 프로필 수정 / 설정
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           GestureDetector(
-            onTap: _stub,
+            onTap: () => _push(const ProfileEditScreen()),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
               decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.62), borderRadius: BorderRadius.circular(999), border: Border.all(color: Colors.white.withValues(alpha: 0.7))),
@@ -129,7 +140,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
               ]),
             ),
           ),
-          MinTapTarget(const Icon(LucideIcons.settings, size: 22, color: T.textMuted), onTap: _stub),
+          MinTapTarget(const Icon(LucideIcons.settings, size: 22, color: T.textMuted), onTap: () => _push(const SettingsScreen())),
         ]),
         const SizedBox(height: 10),
         // 아바타 + 인증 배지(verified일 때만)
@@ -209,7 +220,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
   Widget _followCol(String label, int v) => Expanded(
         child: GestureDetector(
-          onTap: _stub,
+          onTap: () => _push(const FollowListScreen()),
           behavior: HitTestBehavior.opaque,
           child: Column(children: [
             Text('$v', style: tx(17, FontWeight.w700, T.textStrong, height: 1, tab: true)),
@@ -225,7 +236,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       return Padding(
         padding: const EdgeInsets.fromLTRB(18, 14, 18, 4),
         child: GestureDetector(
-          onTap: _stub,
+          onTap: () => _push(const WalletScreen()),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(gradient: T.gradWallet, borderRadius: BorderRadius.circular(T.rXl), boxShadow: [BoxShadow(color: const Color(0xFF3D7DFA).withValues(alpha: 0.28), blurRadius: 18, offset: const Offset(0, 6))]),
@@ -286,7 +297,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 8, 18, 4),
       child: GestureDetector(
-        onTap: _stub,
+        onTap: () => _push(const TreasurerMeetingsScreen()),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
           decoration: BoxDecoration(color: T.white, borderRadius: BorderRadius.circular(T.rXl), border: Border.all(color: T.borderDefault, width: 1.5)),
@@ -592,7 +603,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             child: MCard(
               radius: T.rXl,
               padding: const EdgeInsets.all(14),
-              onTap: _stub,
+              onTap: () => _push(const ClubHomeScreen()),
               child: Row(children: [
                 ClipRRect(borderRadius: BorderRadius.circular(T.rMd), child: NetImage(url: club.img, width: 48, height: 48, fallback: Container(width: 48, height: 48, color: T.gray100))),
                 const SizedBox(width: 12),
@@ -626,7 +637,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             ),
           ),
         GestureDetector(
-          onTap: _stub,
+          onTap: () => _push(const CreateClubScreen()),
           child: Container(
             height: 52,
             alignment: Alignment.center,
@@ -653,7 +664,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           physics: const NeverScrollableScrollPhysics(),
           children: [
             for (final img in _feedImgs)
-              GestureDetector(onTap: _stub, child: NetImage(url: img, fallback: Container(color: T.gray100))),
+              GestureDetector(onTap: () => _push(const PostDetailScreen()), child: NetImage(url: img, fallback: Container(color: T.gray100))),
           ],
         ),
       );

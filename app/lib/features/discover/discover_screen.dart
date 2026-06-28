@@ -5,6 +5,9 @@ import '../../core/theme/tokens.dart';
 import '../../core/widgets/chrome.dart';
 import '../../core/widgets/toast.dart';
 import '../common/meeting_card.dart';
+import '../meeting/meeting_detail_screen.dart';
+import '../meeting/create_meeting_screen.dart';
+import 'location_set_screen.dart';
 
 class _Cat {
   final String id, label;
@@ -103,7 +106,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         _selDistance = '5km';
       });
 
-  void _stub() => MoishoToast.show(context, '준비 중인 화면이에요', tone: 'info');
+  void _push(Widget screen) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +140,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   Widget _locationBar() => GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: _openLocationSheet,
+        onLongPress: () => _push(const LocationSetScreen()),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: const BoxDecoration(color: T.white, border: Border(bottom: BorderSide(color: T.borderSubtle))),
@@ -362,7 +366,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         else
           ...filtered.map((m) {
             final distLabel = m.dist < 1 ? '${(m.dist * 1000).round()}m' : '${m.dist}km';
-            return MeetingCard(item: m, distLabel: distLabel, onTap: _stub);
+            return MeetingCard(
+              item: m,
+              distLabel: distLabel,
+              onTap: () => _push(MeetingDetailScreen(title: m.title, club: m.club)),
+            );
           }),
       ],
     );
@@ -382,7 +390,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           Text('검색어나 거리·카테고리 필터를 바꿔보세요', textAlign: TextAlign.center, style: tx(12, FontWeight.w500, T.textDisabled, height: 1.5)),
           const SizedBox(height: 16),
           GestureDetector(
-            onTap: _stub,
+            onTap: () => _push(const CreateMeetingScreen()),
             child: Container(
               height: 40,
               padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -429,7 +437,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               child: GestureDetector(
                 onTap: () {
                   setState(() => _fabOpen = false);
-                  _stub();
+                  _push(const CreateMeetingScreen());
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
